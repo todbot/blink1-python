@@ -29,9 +29,12 @@ Use the pip utility to fetch the latest release of this package and any addition
 Developer installation
 ----------------------
 
-Having checked out the blink(1) library, cd to python/pypi and run the setup script:
+Having checked out the blink1-python library, cd to it and run the setup script:
 
+    git clone https://github.com/todbot/blink1-python
+    cd blink1-python
     python3 setup.py develop
+
 
 Use
 ---
@@ -45,18 +48,19 @@ The simplest way to use this library is via a context manager.
         b1.fade_to_color(100, 'navy')
         time.sleep(10)
 
-When the blink1() block exits the light is automatically switched off. It is also possible to access the exact same
-set of functions without the context manager:
+When the blink1() block exits the light is automatically switched off.
+It is also possible to access the exact same set of functions without the context manager:
 
-from blink1.blink1 import Blink1
-    import time
+    from blink1.blink1 import Blink1
+        import time
 
-    b1 = Blink1()
-    b1.fade_to_rgb(1000, 64, 64, 64)
-    time.sleep(3)
-    b1.fade_to_rgb(1000, 255, 255, 255)
+        b1 = Blink1()
+        b1.fade_to_rgb(1000, 64, 64, 64)
+        time.sleep(3)
+        b1.fade_to_rgb(1000, 255, 255, 255)
 
-Unlike the context manager, this demo will leave the blink(1) at the end of execution.
+Unlike the context manager, this demo will leave the blink(1) open at the end of execution.
+To close it, use the `b1.close()` method.
 
 Colors
 ------
