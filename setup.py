@@ -7,7 +7,7 @@ PROJECT_NAME = 'blink1'
 PROJECT_AUTHORS = "Salim Fadhley, Tod E. Kurt"
 PROJECT_EMAILS = 'salimfadhley@gmail.com, todbotdotcom@gmail.com'
 PROJECT_URL = "https://github.com/todbot/blink1-python"
-SHORT_DESCRIPTION = 'Blink(1) control library'
+SHORT_DESCRIPTION = 'Official blink(1) control library, using pyhidapi'
 
 try:
     DESCRIPTION = open(os.path.join(PROJECT_ROOT, "README.md")).read()
@@ -31,8 +31,8 @@ setup(
     license='MIT',
     entry_points={
         'console_scripts': [
-            'flash = blink1.flash:flash',
-            'shine = blink1.shine:shine'
+            'blink1-flash = blink1.flash:flash',
+            'blink1-shine = blink1.shine:shine'
         ]
     },
     classifiers=[
