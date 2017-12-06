@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
-import time
+import time,sys
 
-#from blink1 import Blink1
 from blink1.blink1 import Blink1
 
 blink1_serials = Blink1.list()
-print("serials: ", ','.join(blink1_serials))
+print("blink(1) devices found:", ','.join(blink1_serials))
 
 #blink1 = Blink1(serial_number=u'20006487')
 blink1 = Blink1()
 
 if ( blink1.dev == None ):
     print("no blink1 found")
+    sys.exit()
 else:
     print("blink(1) found")
 

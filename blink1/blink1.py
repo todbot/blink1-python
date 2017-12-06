@@ -78,7 +78,6 @@ class Blink1:
             gamma=(gamma or DEFAULT_GAMMA),
             white_point=(white_point or DEFAULT_WHITE_POINT)
         )
-
         self.dev = self.find(serial_number)
 
     def close(self):

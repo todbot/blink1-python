@@ -3,10 +3,8 @@
 Python3 Blink(1) library
 ========================
 
-Official Python library for blink(1) USB RGB LED notification device
+Official Python library for blink(1) USB RGB LED notification devices
 https://blink1.thingm.com/
-
-Originally written by @salimfadhley.
 
 About this library
 ------------------
@@ -18,6 +16,11 @@ This is a rewrite of the original Python library. It includes the following modi
 * Automatic installation via Python Package Index.
 * Higher level control over the blink(1).
 * Single implementation with `pyhidapi` (instead of PyUSB), intended to be installed with admin access or virtualenv.
+
+This library lives at https://github.com/todbot/blink1-python
+
+Originally written by @salimfadhley, at https://github.com/salimfadhley/blink1/tree/master/python/pypi.
+Moved to this repository and rewritten for `pyhidapi` by @todbot.
 
 Installation
 ------------
@@ -34,6 +37,11 @@ Having checked out the blink1-python library, cd to it and run the setup script:
     git clone https://github.com/todbot/blink1-python
     cd blink1-python
     python3 setup.py develop
+    python3 ./blink1_demo/demo1.py
+
+You can now use the `blink1` package on your system. To uninstall the development version:
+
+    python setup.py develop --uninstall
 
 
 Use
