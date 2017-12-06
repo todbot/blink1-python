@@ -6,7 +6,7 @@ blink1_tst -- simple demo of blink1 library
 You can also just run blink1_pyusb.py as a blink1-tool replacement
 
 """
-import time
+import time,sys
 
 from blink1.blink1 import Blink1
 
@@ -15,6 +15,7 @@ blink1 = Blink1()
 
 if ( blink1.dev == None ):
     print("no blink1 found")
+    sys.exit()
 else:
     print("blink(1) found")
 

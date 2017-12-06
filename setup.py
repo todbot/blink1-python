@@ -1,4 +1,5 @@
 from setuptools import setup
+import os
 
 PROJECT_ROOT, _ = os.path.split(__file__)
 REVISION = '0.1.0'
@@ -21,7 +22,7 @@ setup(
     packages=['blink1', 'blink1_tests'],
     zip_safe=True,
     include_package_data=False,
-    install_requires=['pyusb>=1.0.0b1', 'click', 'webcolors'],
+    install_requires=['hidapi>=0.7.99', 'click', 'webcolors'],
     test_suite='nose.collector',
     tests_require=['mock', 'nose', 'coverage'],
     url=PROJECT_URL,

@@ -31,7 +31,7 @@ Developer installation
 
 Having checked out the blink(1) library, cd to python/pypi and run the setup script:
 
-    python setup.py develop
+    python3 setup.py develop
 
 Use
 ---
