@@ -2,12 +2,12 @@ from setuptools import setup
 import os
 
 PROJECT_ROOT, _ = os.path.split(__file__)
-REVISION = '0.1.0'
+REVISION = '0.1.1'
 PROJECT_NAME = 'blink1'
 PROJECT_AUTHORS = "Salim Fadhley, Tod E. Kurt"
 PROJECT_EMAILS = 'salimfadhley@gmail.com, todbotdotcom@gmail.com'
 PROJECT_URL = "https://github.com/todbot/blink1-python"
-SHORT_DESCRIPTION = 'Official blink(1) control library, using pyhidapi'
+SHORT_DESCRIPTION = 'Official blink(1) control library'
 
 try:
     DESCRIPTION = open(os.path.join(PROJECT_ROOT, "README.md")).read()
