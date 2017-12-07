@@ -132,7 +132,7 @@ class Blink1:
         Receive USB Feature Report 0x01 from blink(1) with 8-byte payload
         Note: buf must be 8 bytes or bad things happen
         """
-        buf = self.dev.get_feature_report(REPORT_ID,8)
+        buf = self.dev.get_feature_report(REPORT_ID,9)
         log.debug("blink1read: " + ",".join('0x%02x' % v for v in buf))
         return buf
 
@@ -144,7 +144,7 @@ class Blink1:
         fade_time = int(fade_milliseconds / 10)
         th = (fade_time & 0xff00) >> 8
         tl = fade_time & 0x00ff
-        buf = [REPORT_ID, action, int(red), int(green), int(blue), th, tl, led_number]
+        buf = [REPORT_ID, action, int(red), int(green), int(blue), th, tl, led_number, 0]
         self.write( buf )
 
     def fade_to_rgb(self,fade_milliseconds, red, green, blue, led_number=0):
@@ -187,7 +187,7 @@ class Blink1:
         """Get blink(1) firmware version
         """
         if ( self.dev == None ): return ''
-        buf = [REPORT_ID, ord('v'), 0, 0, 0, 0, 0, 0]
+        buf = [REPORT_ID, ord('v'), 0, 0, 0, 0, 0, 0, 0]
         self.write(buf)
         time.sleep(.05)
         version_raw = self.read()
