@@ -149,7 +149,7 @@ class Blink1:
 
     def fade_to_rgb(self,fade_milliseconds, red, green, blue, led_number=0):
         r, g, b = self.cc(red, green, blue)
-        return self.fade_to_rgb_uncorrected(fade_milliseconds, r, g, b, led_number=0)
+        return self.fade_to_rgb_uncorrected(fade_milliseconds, r, g, b, led_number)
 
     @staticmethod
     def color_to_rgb(color):
