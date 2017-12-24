@@ -2,7 +2,7 @@ from setuptools import setup
 #import os
 
 #PROJECT_ROOT, _ = os.path.split(__file__)
-REVISION = '0.1.2'
+REVISION = '0.1.3'
 PROJECT_NAME = 'blink1'
 PROJECT_AUTHORS = "Salim Fadhley, Tod E. Kurt"
 PROJECT_EMAILS = 'salimfadhley@gmail.com, todbotdotcom@gmail.com'
