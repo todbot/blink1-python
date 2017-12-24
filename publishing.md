@@ -3,8 +3,6 @@
 Publishing notes
 =================
 
-Make sure your `~/.pypirc` points has correct credentials.
-
 
 To publish:
 
@@ -22,3 +20,12 @@ Note `setup.py` uses `setuptools-markdown` which requires having installed:
 brew install pandoc
 pip3 install setuptools-markdown
 ```
+
+Make sure your `~/.pypirc` points to correct credentials. E.g.
+```
+index-servers =
+  pypitodbotdotcom
+
+[pypitodbotdotcom]
+username=todbotdotcom
+password=....
