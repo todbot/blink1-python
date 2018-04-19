@@ -81,6 +81,7 @@ class Blink1:
         self.dev = self.find(serial_number)
 
     def close(self):
+        self.dev.close()
         self.dev = None
 
     @staticmethod
