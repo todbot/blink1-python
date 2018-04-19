@@ -7,8 +7,9 @@ from blink1.blink1 import Blink1
 blink1_serials = Blink1.list()
 print("blink(1) devices found:", ','.join(blink1_serials))
 
-#blink1 = Blink1(serial_number=u'20006487')
 blink1 = Blink1()
+# To open a particular blink(1), do:
+# blink1 = Blink1(serial_number=u'20006487')
 
 if ( blink1.dev == None ):
     print("no blink1 found")

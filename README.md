@@ -39,7 +39,14 @@ Having checked out the blink1-python library, cd to it and run the setup script:
   python3 setup.py develop
   python3 ./blink1_demo/demo1.py
 ```
-You can now use the `blink1` package on your system. To uninstall the development version:
+You can now use the `blink1` package on your system.
+
+To get internal blink1 library debug, messages set the environment variable `DEBUGBLINK1` like :
+```
+DEBUGBLINK1=1 python3 blink1_demo/demo1.py
+```
+
+To uninstall the development version:
 ```
     python3 setup.py develop --uninstall
 ```

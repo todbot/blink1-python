@@ -11,6 +11,7 @@ import sys
 from contextlib import contextmanager
 import webcolors
 import hid
+import os
 #from builtins import str as text
 
 # from .kelvin import kelvin_to_rgb, COLOR_TEMPERATURES
@@ -26,8 +27,9 @@ class InvalidColor(ValueError):
 
 
 log = logging.getLogger(__name__)
-#logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-#getattr(log, loglevel.upper())
+logging.basicConfig(format='%(levelname)s:%(message)s',
+                    level=logging.DEBUG if os.getenv('DEBUGBLINK1') else logging.INFO )
+
 
 DEFAULT_GAMMA = (2, 2, 2)
 DEFAULT_WHITE_POINT = (255, 255, 255)
@@ -201,6 +203,54 @@ class Blink1:
         return self.dev.get_serial_number_string()
         # return usb.util.get_string(self.dev, 256, 3)
 
+    def play(self, start_pos=0, end_pos=0, count=0):
+        """Play internal color pattern
+        """
+        if ( self.dev == None ): return ''
+        buf = [REPORT_ID, ord('p'), 1, start_pos, end_pos, count, 0, 0, 0]
+        return self.write(buf);
+
+    def stop(self):
+        """Stop internal color pattern playing
+        """
+        if ( self.dev == None ): return ''
+        buf = [REPORT_ID, ord('p'), 0, 0, 0, 0, 0, 0, 0]
+        return self.write(buf);
+
+    def writePatternLine(self, fade_milliseconds, color, pos, led_number=0):
+        """Write a color & fadetime color pattern line at position
+        """
+        if ( self.dev == None ): return ''
+        buf = [REPORT_ID, ord('l'), led_number, 0,0,0,0,0,0]
+        self.write(buf)
+        red, green, blue = self.color_to_rgb(color)
+        r, g, b = self.cc(red, green, blue)
+        fade_time = int(fade_milliseconds / 10)
+        th = (fade_time & 0xff00) >> 8
+        tl = fade_time & 0x00ff
+        buf = [REPORT_ID, ord('P'), r,g,b, th,tl, pos, 0]
+        return self.write(buf);
+
+    def readPatternLine(self, pos):
+        """Read a color pattern line at position
+        """
+        if ( self.dev == None ): return ''
+        buf = [REPORT_ID, ord('R'), 0, 0, 0, 0, 0, pos, 0]
+        self.write(buf)
+        buf = self.read()
+        (r,g,b) = (buf[2],buf[3],buf[4])
+        fade_millis = ((buf[5] << 8) | buf[6]) * 10
+        return (r,g,b,fade_millis)
+    
+    def readPattern(self, start_pos=0, end_pos=0):
+        """Read the entire color pattern
+        """
+        if ( self.dev == None ): return ''
+        pattern=[]
+        for i in range(0,16):    # FIXME: adjustable for diff blink(1) models
+            pattern.append( self.readPatternLine(i) )
+        return pattern
+        
 
 @contextmanager
 def blink1(switch_off=True, gamma=None, white_point=None):
