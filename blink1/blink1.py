@@ -207,8 +207,7 @@ def blink1(switch_off=True, gamma=None, white_point=None):
     """Context manager which automatically shuts down the Blink(1)
     after use.
     """
-    # b1 = Blink1(gamma=gamma, white_point=white_point)
-    b1 = Blink1()
+    b1 = Blink1(gamma=gamma, white_point=white_point)
     yield b1
     if switch_off:
         b1.off()
