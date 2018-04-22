@@ -27,8 +27,8 @@ class InvalidColor(ValueError):
 
 
 log = logging.getLogger(__name__)
-#logging.basicConfig(format='%(levelname)s:%(message)s',
-#                    level=logging.DEBUG if os.getenv('DEBUGBLINK1') else logging.INFO )
+logging.basicConfig(format='%(levelname)s:%(message)s',
+                    level=logging.DEBUG if os.getenv('DEBUGBLINK1') else logging.INFO )
 
 
 DEFAULT_GAMMA = (2, 2, 2)
@@ -112,7 +112,7 @@ class Blink1:
         """
         try:
             devs = hid.enumerate(VENDOR_ID,PRODUCT_ID)
-            serials = map(lambda d:d.get('serial_number'), devs)
+            serials = list(map(lambda d:d.get('serial_number'), devs))
             return serials
         except IOError as e:
             return []
