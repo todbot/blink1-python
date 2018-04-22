@@ -13,8 +13,8 @@ This is a rewrite of the original Python library. It includes the following modi
 * 100% test coverage on all library components
 * Python 3.x compatible
 * Automatic installation via Python Package Index.
-* Higher level control over the blink(1).
-* Single implementation with `cython-hidapi` (instead of PyUSB), intended to be installed with admin access or virtualenv.
+* High level control over the blink(1).
+* Single implementation with `cython-hidapi` (instead of PyUSB)
 
 This library lives at https://github.com/todbot/blink1-python
 
@@ -26,29 +26,32 @@ Moved to this repository and rewritten for `cython-hidapi` by @todbot.
 Use the pip utility to fetch the latest release of this package and any
 additional components required in a single step:
 ```
-  pip3 install blink1
+  pip install blink1
 ```
 
 ## Developer installation
 
-
-Having checked out the blink1-python library, cd to it and run the setup script:
+Having checked out the `blink1-python` library, cd to its directory and run the setup script:
 ```
   git clone https://github.com/todbot/blink1-python
   cd blink1-python
   python3 setup.py develop
   python3 ./blink1_demo/demo1.py
 ```
-You can now use the `blink1` package on your system.
-
-To get internal blink1 library debug, messages set the environment variable `DEBUGBLINK1` like :
+or
 ```
-DEBUGBLINK1=1 python3 blink1_demo/demo1.py
+  pip install --editable
+```
+You can now use the `blink1` package on your system and edit it.
+
+To get internal blink1 library debug, messages set the environment variable `DEBUGBLINK1`:
+```
+DEBUGBLINK1=1 python3 ./blink1_demo/demo1.py
 ```
 
 To uninstall the development version:
 ```
-    python3 setup.py develop --uninstall
+  python3 setup.py develop --uninstall
 ```
 
 ### OS-specific notes
@@ -56,10 +59,18 @@ To uninstall the development version:
 While `blink1-python` is not OS-specific, the [cython-hidapi](https://github.com/trezor/cython-hidapi) library it uses does have platform-specific requirements.
 
 #### Linux:
-You will need to install extra packages, like:
+You will need to install extra packages:
 ```
   sudo apt-get install python-dev libusb-1.0-0-dev libudev-dev
 ```
+
+And udev rules for non-root user access:
+```
+  echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="27b8", ATTRS{idProduct}=="01ed", MODE:="666", GROUP="plugdev"' | sudo tee /etc/udev/rules.d/51-blink1.rules
+  sudo udevadm control --reload
+  sudo udevadm trigger
+```
+
 
 #### Mac OS X:
 You will need Xcode installed with command-line tools.
