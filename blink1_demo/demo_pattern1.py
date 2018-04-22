@@ -21,8 +21,8 @@ print("  firmware version: " + blink1.get_version())
 print("playing full entire pattern")
 blink1.play();
 
-print("waiting for 5 seconds")
-time.sleep(5.0)
+print("waiting for 10 seconds")
+time.sleep(10.0)
 
 print("stopping pattern")
 blink1.stop()

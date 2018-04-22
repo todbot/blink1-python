@@ -212,7 +212,7 @@ class Blink1:
     def play(self, start_pos=0, end_pos=0, count=0):
         """Play internal color pattern
         :param start_pos: pattern line to start from
-        :param end_pos: pattern line to end at (but not play)
+        :param end_pos: pattern line to end at 
         :param count: number of times to play, 0=play forever
         """
         if ( self.dev == None ): return ''
@@ -241,33 +241,35 @@ class Blink1:
         buf = [REPORT_ID, ord('l'), led_number, 0,0,0,0,0,0]
         self.write(buf)        
         
-    def writePatternLine(self, fade_milliseconds, color, pos, led_number=0):
-        """Write a color & fadetime color pattern line to RAM 
+    def writePatternLine(self, step_milliseconds, color, pos, led_number=0):
+        """Write a color & step time color pattern line to RAM 
+        :param step_milliseconds: how long for this pattern line to take
+        :param color: LED color
+        :param pos: color pattern line number (0-15)
         :param led_number: LED to adjust, 0=all, 1=LEDA, 2=LEDB
         """
         if ( self.dev == None ): return ''
         self.setLedN(led_number)
         red, green, blue = self.color_to_rgb(color)
         r, g, b = self.cc(red, green, blue)
-        fade_time = int(fade_milliseconds / 10)
-        th = (fade_time & 0xff00) >> 8
-        tl = fade_time & 0x00ff
+        step_time = int(step_milliseconds / 10)
+        th = (step_time & 0xff00) >> 8
+        tl = step_time & 0x00ff
         buf = [REPORT_ID, ord('P'), int(r), int(g), int(b), th,tl, pos, 0]
-        print(r,g,b, fade_time,th,tl)
         return self.write(buf);
 
     def readPatternLine(self, pos):
         """Read a color pattern line at position
         :param pos: pattern line to read
-        :return pattern line data as tuple (r,g,b, fade_millis)
+        :return pattern line data as tuple (r,g,b, step_millis)
         """
         if ( self.dev == None ): return ''
         buf = [REPORT_ID, ord('R'), 0, 0, 0, 0, 0, int(pos), 0]
         self.write(buf)
         buf = self.read()
         (r,g,b) = (buf[2],buf[3],buf[4])
-        fade_millis = ((buf[5] << 8) | buf[6]) * 10
-        return (r,g,b,fade_millis)
+        step_millis = ((buf[5] << 8) | buf[6]) * 10
+        return (r,g,b,step_millis)
     
     def readPattern(self):
         """Read the entire color pattern
@@ -279,7 +281,7 @@ class Blink1:
             pattern.append( self.readPatternLine(i) )
         return pattern
 
-    def serverTickle(self, enable, timeout_millis, stay_lit=False):
+    def serverTickle(self, enable, timeout_millis=0, stay_lit=False):
         """Enable/disable servertickle / serverdown watchdog
         :param: enable: Set True to enable serverTickle
         :param: timeout_millis: millisecs until servertickle is triggered
