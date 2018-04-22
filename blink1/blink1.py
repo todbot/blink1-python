@@ -14,7 +14,7 @@ import hid
 import os
 #from builtins import str as text
 
-# from .kelvin import kelvin_to_rgb, COLOR_TEMPERATURES
+from .kelvin import kelvin_to_rgb, COLOR_TEMPERATURES
 
 
 class Blink1ConnectionFailed(RuntimeError):
