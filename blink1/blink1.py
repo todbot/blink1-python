@@ -27,8 +27,8 @@ class InvalidColor(ValueError):
 
 
 log = logging.getLogger(__name__)
-logging.basicConfig(format='%(levelname)s:%(message)s',
-                    level=logging.DEBUG if os.getenv('DEBUGBLINK1') else logging.INFO )
+#logging.basicConfig(format='%(levelname)s:%(message)s',
+#                    level=logging.DEBUG if os.getenv('DEBUGBLINK1') else logging.INFO )
 
 
 DEFAULT_GAMMA = (2, 2, 2)
@@ -122,7 +122,7 @@ class Blink1:
 
     def write(self,buf):
         """
-        Write command to blink(1)
+        Write command to blink(1), low-level internal use
         Send USB Feature Report 0x01 to blink(1) with 8-byte payload
         Note: arg 'buf' must be 8 bytes or bad things happen
         """
@@ -131,7 +131,7 @@ class Blink1:
 
     def read(self):
         """
-        Read command result from blink(1)
+        Read command result from blink(1), low-level internal use
         Receive USB Feature Report 0x01 from blink(1) with 8-byte payload
         Note: buf must be 8 bytes or bad things happen
         """
@@ -156,6 +156,9 @@ class Blink1:
 
     @staticmethod
     def color_to_rgb(color):
+        """
+        Convert color name or hexcode to (r,g,b) tuple
+        """
         if isinstance(color, tuple):
             return color
         if color.startswith('#'):
@@ -199,12 +202,16 @@ class Blink1:
 
     def get_serial_number(self):
         """Get blink(1) serial number
+        :return blink(1) serial number as string
         """
         return self.dev.get_serial_number_string()
         # return usb.util.get_string(self.dev, 256, 3)
 
     def play(self, start_pos=0, end_pos=0, count=0):
         """Play internal color pattern
+        :param start_pos: pattern line to start from
+        :param end_pos: pattern line to end at (but not play)
+        :param count: number of times to play, 0=play forever
         """
         if ( self.dev == None ): return ''
         buf = [REPORT_ID, ord('p'), 1, start_pos, end_pos, count, 0, 0, 0]
@@ -217,12 +224,27 @@ class Blink1:
         buf = [REPORT_ID, ord('p'), 0, 0, 0, 0, 0, 0, 0]
         return self.write(buf);
 
-    def writePatternLine(self, fade_milliseconds, color, pos, led_number=0):
-        """Write a color & fadetime color pattern line at position
+    def savePattern(self):
+        """Save internal RAM pattern to flash 
+        """
+        if ( self.dev == None ): return ''
+        buf = [REPORT_ID, ord('W'), 0xBE, 0xEF, 0xCA, 0xFE, 0, 0, 0]
+        return self.write(buf);
+
+    def setLedN(self, led_number=0):
+        """Set the 'current LED' value for writePatternLine
+        :param led_number: LED to adjust, 0=all, 1=LEDA, 2=LEDB
         """
         if ( self.dev == None ): return ''
         buf = [REPORT_ID, ord('l'), led_number, 0,0,0,0,0,0]
-        self.write(buf)
+        self.write(buf)        
+        
+    def writePatternLine(self, fade_milliseconds, color, pos, led_number=0):
+        """Write a color & fadetime color pattern line to RAM 
+        :param led_number: LED to adjust, 0=all, 1=LEDA, 2=LEDB
+        """
+        if ( self.dev == None ): return ''
+        self.setLedN(led_number)
         red, green, blue = self.color_to_rgb(color)
         r, g, b = self.cc(red, green, blue)
         fade_time = int(fade_milliseconds / 10)
@@ -233,6 +255,8 @@ class Blink1:
 
     def readPatternLine(self, pos):
         """Read a color pattern line at position
+        :param pos: pattern line to read
+        :return pattern line data as tuple (r,g,b, fade_millis)
         """
         if ( self.dev == None ): return ''
         buf = [REPORT_ID, ord('R'), 0, 0, 0, 0, 0, pos, 0]
@@ -242,20 +266,39 @@ class Blink1:
         fade_millis = ((buf[5] << 8) | buf[6]) * 10
         return (r,g,b,fade_millis)
     
-    def readPattern(self, start_pos=0, end_pos=0):
+    def readPattern(self):
         """Read the entire color pattern
+        :return List of pattern line tuples
         """
         if ( self.dev == None ): return ''
         pattern=[]
         for i in range(0,16):    # FIXME: adjustable for diff blink(1) models
             pattern.append( self.readPatternLine(i) )
         return pattern
+
+    def serverTickle(self, enable, timeout_millis, stay_lit=False):
+        """Enable/disable servertickle / serverdown watchdog
+        :param: enable: Set True to enable serverTickle
+        :param: timeout_millis: millisecs until servertickle is triggered
+        :param: stay_lit: Set True to keep current color of blink(1), False to turn off
+        """
+        if ( self.dev == None ): return ''
+        en = int(enable == True)
+        timeout_time = tmieout_millis/10
+        th = (timeout_time & 0xff00) >>8
+        tl = timeout_time & 0x00ff
+        st = int(stay_lit == True)
+        buf = [REPORT_ID, ord('D'), en, th, tl, st, 0, 0, 0]
+        self.write(buf)
         
 
 @contextmanager
 def blink1(switch_off=True, gamma=None, white_point=None):
     """Context manager which automatically shuts down the Blink(1)
     after use.
+    :param switch_off: turn blink(1) off when existing context
+    :param gamma: set gamma curve (as tuple)
+    :param white_point: set white point (as tuple)
     """
     b1 = Blink1(gamma=gamma, white_point=white_point)
     yield b1
