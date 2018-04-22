@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 """
-blink1_tst -- simple demo of blink1 library
-
-You can also just run blink1_pyusb.py as a blink1-tool replacement
+demo1 -- simple demo of blink1 library
 
 """
 import time,sys
@@ -19,8 +17,8 @@ if ( blink1.dev == None ):
 else:
     print("blink(1) found")
 
-print("serial number: " + blink1.get_serial_number())
-print("firmware version: " + blink1.get_version())
+print("  serial number: " + blink1.get_serial_number())
+print("  firmware version: " + blink1.get_version())
 
 print("fading to #ffffff")
 blink1.fade_to_rgb(1000, 255, 255, 255)
