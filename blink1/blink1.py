@@ -17,9 +17,9 @@ import os
 from .kelvin import kelvin_to_rgb, COLOR_TEMPERATURES
 
 
-#class Blink1ConnectionFailed(RuntimeError):
-#    """Raised when we cannot connect to a Blink(1)
-#    """
+class Blink1ConnectionFailed(RuntimeError):
+    """Raised when we cannot connect to a Blink(1)
+    """
 
 class InvalidColor(ValueError):
     """Raised when the user requests an implausible colour
@@ -98,9 +98,10 @@ class Blink1:
             # hidraw = hid.device(VENDOR_ID,PRODUCT_ID,unicode(serial_number))
             # hidraw.open(VENDOR_ID,PRODUCT_ID,unicode(serial_number))
         except IOError as e:  # python2
-#            raise Blink1ConnectionFailed(e)
+            raise Blink1ConnectionFailed(e)
             hidraw = None
         except OSError as e:  # python3
+            raise Blink1ConnectionFailed(e)
             hidraw = None
 
         return hidraw
@@ -215,7 +216,7 @@ class Blink1:
         :param count: number of times to play, 0=play forever
         """
         if ( self.dev == None ): return ''
-        buf = [REPORT_ID, ord('p'), 1, start_pos, end_pos, count, 0, 0, 0]
+        buf = [REPORT_ID, ord('p'), 1, int(start_pos), int(end_pos), int(count), 0, 0, 0]
         return self.write(buf);
 
     def stop(self):
@@ -251,7 +252,8 @@ class Blink1:
         fade_time = int(fade_milliseconds / 10)
         th = (fade_time & 0xff00) >> 8
         tl = fade_time & 0x00ff
-        buf = [REPORT_ID, ord('P'), r,g,b, th,tl, pos, 0]
+        buf = [REPORT_ID, ord('P'), int(r), int(g), int(b), th,tl, pos, 0]
+        print(r,g,b, fade_time,th,tl)
         return self.write(buf);
 
     def readPatternLine(self, pos):
@@ -260,7 +262,7 @@ class Blink1:
         :return pattern line data as tuple (r,g,b, fade_millis)
         """
         if ( self.dev == None ): return ''
-        buf = [REPORT_ID, ord('R'), 0, 0, 0, 0, 0, pos, 0]
+        buf = [REPORT_ID, ord('R'), 0, 0, 0, 0, 0, int(pos), 0]
         self.write(buf)
         buf = self.read()
         (r,g,b) = (buf[2],buf[3],buf[4])
@@ -285,7 +287,7 @@ class Blink1:
         """
         if ( self.dev == None ): return ''
         en = int(enable == True)
-        timeout_time = tmieout_millis/10
+        timeout_time = int(timeout_millis/10)
         th = (timeout_time & 0xff00) >>8
         tl = timeout_time & 0x00ff
         st = int(stay_lit == True)
