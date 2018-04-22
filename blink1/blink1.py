@@ -17,9 +17,9 @@ import os
 from .kelvin import kelvin_to_rgb, COLOR_TEMPERATURES
 
 
-class Blink1ConnectionFailed(RuntimeError):
-    """Raised when we cannot connect to a Blink(1)
-    """
+#class Blink1ConnectionFailed(RuntimeError):
+#    """Raised when we cannot connect to a Blink(1)
+#    """
 
 class InvalidColor(ValueError):
     """Raised when the user requests an implausible colour
@@ -97,9 +97,10 @@ class Blink1:
             hidraw.open(VENDOR_ID,PRODUCT_ID,serial_number)
             # hidraw = hid.device(VENDOR_ID,PRODUCT_ID,unicode(serial_number))
             # hidraw.open(VENDOR_ID,PRODUCT_ID,unicode(serial_number))
-#        except IOError as e:
+        except IOError as e:  # python2
 #            raise Blink1ConnectionFailed(e)
-        except OSError as e:
+            hidraw = None
+        except OSError as e:  # python3
             hidraw = None
 
         return hidraw

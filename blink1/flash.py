@@ -16,9 +16,9 @@ def flash(on, off, duration, repeat, fade):
 
     for i in range(0, repeat):
         blink1.fade_to_color(fade * 1000, on)
-        time.sleep(duration/2)
+        time.sleep(duration/2.0)
         blink1.fade_to_color(fade * 1000, off)
-        time.sleep(duration/2)
+        time.sleep(duration/2.0)
 
     blink1.fade_to_rgb(fade * 1000, 0, 0, 0)
 

@@ -41,7 +41,7 @@ def kelvin_to_rgb(kelvin):
     :param kelvin: Color temp in K
     :return: Tuple of (r, g, b), equivalent color for the temperature
     """
-    temp = kelvin / 100
+    temp = kelvin / 100.0
 
     # Calculate Red:
     if temp <= 66:
