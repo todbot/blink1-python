@@ -13,7 +13,8 @@ if blink1_serials:
     print("blink(1) devices found: "+ ','.join(blink1_serials))
 else:
     print("no blink1 found")
-
+    sys.exit()
+    
 
 # To open a particular blink(1), do:
 # blink1 = Blink1(serial_number=u'20006487')
