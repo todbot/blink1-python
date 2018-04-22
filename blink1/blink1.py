@@ -61,7 +61,7 @@ class ColorCorrect(object):
 
     @staticmethod
     def gamma_correct(gamma, white, luminance):
-        return round(white * (luminance / 255) ** gamma)
+        return round(white * (luminance / 255.0) ** gamma)
 
     def __call__(self, r, g, b):
         color = [r,g,b]
