@@ -1,6 +1,6 @@
 
 
-Python3 Blink(1) library
+Python Blink(1) library
 ========================
 
 Official Python library for blink(1) USB RGB LED notification devices
@@ -8,6 +8,7 @@ https://blink1.thingm.com/
 
 * [About this library](#about-this-library)
 * [Installation](#installation)
+* [Example Code and Installed scripts](#example-code-and-installed-scripts)
 * [OS-specific notes](#os-specific-notes)
    * [Linux:](#linux)
    * [Mac OS X:](#mac-os-x)
@@ -42,6 +43,13 @@ additional components required in a single step:
 ```
   pip install blink1
 ```
+
+## Example Code and Installed scripts
+Two command-line scripts `blink1-shine` and `blink1-flash` are installed when this library is installed.
+* `blink1-shine` – Tell the blink(1) to be specifc steady color
+* `blink1-flash` – Flash the blink(1) two different colors at a specific rate
+
+For examples, see the [`blink1_demo`](./blink1_demo/) directory for several examples on how to use this library.
 
 ## OS-specific notes
 The `blink1-python` library relies on [`cython-hidapi`](https://github.com/trezor/cython-hidapi) for USB HID access.  This package may require a C compiler and attendant utilities to be installed before installing this library.
@@ -157,8 +165,9 @@ told otherwise.
 
 To use, enable severtickle with a timeout value (max timeout 62 seconds):
 ```
-
+blink1.serverTickle(enable=True, timeout_millis=2000)
 ```
+
 
 ### Gamma correction
 
