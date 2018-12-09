@@ -52,7 +52,7 @@ Two command-line scripts `blink1-shine` and `blink1-flash` are installed when th
 For examples, see the [`blink1_demo`](./blink1_demo/) directory for several examples on how to use this library.
 
 ## OS-specific notes
-The `blink1-python` library relies on [`cython-hidapi`](https://github.com/trezor/cython-hidapi) for USB HID access.  This package may require a C compiler and attendant utilities to be installed before installing this library.
+The `blink1-python` library relies on [cython-hidapi](https://github.com/trezor/cython-hidapi) for USB HID access.  This package may require a C compiler and attendant utilities to be installed before installing this library.
 
 ### Linux:
 The following extra packages must be installed:
