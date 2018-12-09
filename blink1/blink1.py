@@ -281,11 +281,13 @@ class Blink1:
             pattern.append( self.readPatternLine(i) )
         return pattern
 
-    def serverTickle(self, enable, timeout_millis=0, stay_lit=False):
+    def serverTickle(self, enable, timeout_millis=0, stay_lit=False, start_pos=0, end_pos=16):
         """Enable/disable servertickle / serverdown watchdog
         :param: enable: Set True to enable serverTickle
         :param: timeout_millis: millisecs until servertickle is triggered
         :param: stay_lit: Set True to keep current color of blink(1), False to turn off
+        :param: start_pos: Sub-pattern start position in whole color pattern
+        :param: end_pos: Sub-pattern end position in whole color pattern
         """
         if ( self.dev == None ): return ''
         en = int(enable == True)
@@ -293,7 +295,7 @@ class Blink1:
         th = (timeout_time & 0xff00) >>8
         tl = timeout_time & 0x00ff
         st = int(stay_lit == True)
-        buf = [REPORT_ID, ord('D'), en, th, tl, st, 0, 0, 0]
+        buf = [REPORT_ID, ord('D'), en, th, tl, st, start_pos, end_pos, 0]
         self.write(buf)
         
 
