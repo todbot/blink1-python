@@ -3,6 +3,7 @@
 Publishing notes
 =================
 
+To develop and test, see the "Developer Installation" in the README.
 
 To publish:
 
