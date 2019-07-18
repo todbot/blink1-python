@@ -127,13 +127,14 @@ Attempting to select a color outside the plausible range will generate an Invali
 
 ### Pattern playing
 
-The blink(1) device has a 16 line non-volatile color pattern memory.
-This color pattern plays automatically if power is applied but not connected to a computer.  You can also trigger this pattern (or sub-patterns) over USB,
+The blink(1) device has a 16-line non-volatile color pattern memory.
+This color pattern plays automatically if power is applied but not connected to a computer.
+you can also trigger this pattern (or sub-patterns) over USB,
 leaving your application free to do other things besides blink lights.
 
 Each line in the color pattern consists of an R,G,B triplet and a fade time to reach that color.
 
-To play the pattern or sub-patterns:
+To play the pattern in blink(1) or sub-patterns:
 ```
 blink1.play()  # play entire color pattern, infinitely looped
 blink1.stop()  # stop a color pattern playing (if playing)
@@ -143,10 +144,10 @@ blink1.play(2,3, count=7)  # play color pattern lines 2,3 in a loop 7 times
 
 To alter the lines of the pattern memory:
 ```
-# write 100msec fades to green then black then yellow at lines 3,4,5
-blink1.writePatternLine( 100, 'green',  3)
-blink1.writePatternLine( 100, 'black',  4)
-blink1.writePatternLine( 100, 'yellow', 5)
+# write 100msec fades to green then yellow then black at lines 3,4,5
+blink1.write_pattern_line( 100, 'green',  3)
+blink1.write_pattern_line( 100, 'yellow', 4)
+blink1.write_pattern_line( 100, 'black',  5)
 
 blink1.play( 3,5, 4)  # play that sub-loop 4 times
 ```
@@ -165,7 +166,7 @@ told otherwise.
 
 To use, enable severtickle with a timeout value (max timeout 62 seconds):
 ```
-blink1.serverTickle(enable=True, timeout_millis=2000)
+blink1.server_tickle(enable=True, timeout_millis=2000)
 ```
 
 
@@ -186,13 +187,13 @@ Higher values of gamma make the blink(1) appear more colorful but decrease the b
 ### White point correction
 
 The human eye's perception of color can be influenced by ambient lighting. In some circumstances it may be desirable
-to apply a small colour correction in order to make colors appear more accurate. For example, if we were operating
-the blink(1) in a room lit predimenantly by candle-light:
+to apply a small color correction in order to make colors appear more accurate. For example, if we were operating
+the blink(1) in a room lit predominantly by candle-light:
 ```
   with blink1(white_point='candle', switch_off) as b1:
     b1.fade_to_color(100, 'white')
 ```
-Viewed in daylight this would make the Blink(1) appear yellowish, hoever in a candle-lit room this would be perceived
+Viewed in daylight this would make the Blink(1) appear yellowish, however in a candle-lit room this would be perceived
 as a more natural white. If we did not apply this kind of color correction the Blink(1) would appear blueish.
 
 The following values are acceptable white-points:
@@ -224,7 +225,7 @@ Having checked out the `blink1-python` library, cd to its directory and run the 
 ```
 or
 ```
-  pip install --editable .
+  pip3 install --editable .
 ```
 You can now use the `blink1` package on your system and edit it.
 
