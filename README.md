@@ -230,10 +230,10 @@ You can now use the `blink1` package on your system and edit it.
 
 To get internal blink1 library debug, messages set the environment variable `DEBUGBLINK1`:
 ```
-DEBUGBLINK1=1 python ./blink1_demo/demo1.py
+DEBUGBLINK1=1 python3 ./blink1_demo/demo1.py
 ```
 
 To uninstall the development version:
 ```
-  python setup.py develop --uninstall
+  python3 setup.py develop --uninstall
 ```

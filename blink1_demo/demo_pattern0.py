@@ -3,6 +3,7 @@
 """
 demo_pattern0 -- demo of blink1 library color pattern reading
 """
+import sys
 from blink1.blink1 import Blink1
 
 try:
@@ -11,7 +12,6 @@ except:
     print("no blink1 found")
     sys.exit()
 
-
 print("Reading full color pattern:")
-pattern = blink1.readPattern()
+pattern = blink1.read_pattern()
 print(pattern)

@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+"""
+demo_context -- simple context manager demo of blink1 library
+
+"""
+
 import time
 from blink1.blink1 import blink1
 
@@ -18,6 +24,3 @@ with blink1(switch_off=False) as b1:
 with blink1() as b1:
     b1.fade_to_color(300, 'aqua')
     time.sleep(2)
-
-    
-

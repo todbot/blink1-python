@@ -83,6 +83,8 @@ class Blink1:
             white_point=(white_point or DEFAULT_WHITE_POINT)
         )
         self.dev = self.find(serial_number)
+        if( self.dev is None ):
+            print("wtf")
 
     def close(self):
         self.dev.close()
