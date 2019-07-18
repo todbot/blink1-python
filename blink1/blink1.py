@@ -316,7 +316,7 @@ class Blink1:
             return self.playPatternLocal(pattern_str)
 
         # else, play it in the blink(1)
-        (num_repeats,colorlist) = self.parsePattern(pattern_str)
+        (num_repeats,colorlist) = self.parse_pattern(pattern_str)
         pattlen = len(colorlist)
         if( pattlen < 32 ):      # extend out pattern to fill
             for i in range(0,32-pattlen):
@@ -336,7 +336,7 @@ class Blink1:
         :param pattern_str: The Blink1Control-style pattern string to play
         :raises: Blink1ConnectionFailed: if blink(1) is disconnected
         """
-        (num_repeats,colorlist) = self.parsePattern(pattern_str)
+        (num_repeats,colorlist) = self.parse_pattern(pattern_str)
         if num_repeats == 0: num_repeats = -1;
         while( num_repeats ):
             num_repeats = num_repeats - 1
@@ -345,13 +345,13 @@ class Blink1:
                 time.sleep(c['time'])
 
     @staticmethod
-    def parsePattern(pattern_str):
+    def parse_pattern(pattern_str):
         """ Parse a Blink1Control pattern string to a list of pattern lines
             e.g. of the form '10,#ff00ff,0.1,0,#00ff00,0.1,0'
         :param pattern_str: The Blink1Control-style pattern string to parse
         :returns: an list of dicts of the parsed out pieces
         """
-        pattparts = pattstr.replace(' ','').split(',')
+        pattparts = pattern_str.replace(' ','').split(',')
         num_repeats = int(pattparts[0]) # FIXME
         pattparts = pattparts[1:]
 

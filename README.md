@@ -129,7 +129,7 @@ Attempting to select a color outside the plausible range will generate an Invali
 
 The blink(1) device has a 16-line non-volatile color pattern memory.
 This color pattern plays automatically if power is applied but not connected to a computer.
-you can also trigger this pattern (or sub-patterns) over USB,
+You can also trigger this pattern (or sub-patterns) over USB,
 leaving your application free to do other things besides blink lights.
 
 Each line in the color pattern consists of an R,G,B triplet and a fade time to reach that color.
@@ -156,6 +156,17 @@ To save the pattern to non-volatile memory (overwriting the factory pattern):
 ```
 blink1.savePattern()
 ```
+
+To quickly play a pattern in Blink1Control-style string format:
+```
+# play purple on LED1 in 300ms, green on LED2 in 100ms, then swap, for 10 times
+pattern_str = '10, #ff00ff,0.3,1, #00ff00,0.1,2,  #ff00ff,0.3,2, #00ff00,0.1,1'
+blink1.play_pattern(pattern_str)
+# wait 5 seconds while the pattern plays on the blink1
+# (or go do something more useful)
+time.sleep(5.0)
+# flash red-off 5 times fast on all LEDs
+blink1.play_pattern('5, #FF0000,0.2,0,#000000,0.2,0')
 
 ### Servertickle watchdog
 blink(1) also has a "watchdog" of sorts called "servertickle".
