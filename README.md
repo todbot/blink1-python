@@ -167,6 +167,7 @@ blink1.play_pattern(pattern_str)
 time.sleep(5.0)
 # flash red-off 5 times fast on all LEDs
 blink1.play_pattern('5, #FF0000,0.2,0,#000000,0.2,0')
+```
 
 ### Servertickle watchdog
 blink(1) also has a "watchdog" of sorts called "servertickle".
