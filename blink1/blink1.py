@@ -71,7 +71,7 @@ class ColorCorrect(object):
 
 
 class Blink1:
-    """Light controller class, sends messages to the blink(1) and blink(1) mk2 via USB HID.
+    """Light controller class, sends messages to the blink(1) via USB HID.
     """
     def __init__(self, serial_number=None, gamma=None, white_point=None):
         """
