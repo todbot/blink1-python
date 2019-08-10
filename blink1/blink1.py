@@ -27,8 +27,8 @@ class InvalidColor(ValueError):
 
 
 log = logging.getLogger(__name__)
-logging.basicConfig(format='%(levelname)s:%(message)s',
-                    level=logging.DEBUG if os.getenv('DEBUGBLINK1') else logging.INFO )
+if os.getenv('DEBUGBLINK1'):
+    log.setLevel(logging.DEBUG)
 
 
 DEFAULT_GAMMA = (2, 2, 2)
@@ -51,6 +51,7 @@ class ColorCorrect(object):
 
         All gamma values should be 0 > x >= 1
         """
+            
         self.gamma = gamma
 
         if isinstance(white_point, str):
