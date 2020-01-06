@@ -264,7 +264,7 @@ blink1.blink1.Blink1 = class Blink1
  |  
  |  fade_to_rgb_uncorrected(self, fade_milliseconds, red, green, blue, ledn=0)
  |      Command blink(1) to fade to RGB color, no color correction applied.
- |      :throws: Blink1ConnectionFailed if blink(1) is disconnected
+ |      :raises: Blink1ConnectionFailed if blink(1) is disconnected
  |  
  |  get_serial_number(self)
  |      Get blink(1) serial number
@@ -343,7 +343,7 @@ blink1.blink1.Blink1 = class Blink1
  |      Write command to blink(1), low-level internal use
  |      Send USB Feature Report 0x01 to blink(1) with 8-byte payload
  |      Note: arg 'buf' must be 8 bytes or bad things happen
- |      :return: number of bytes written or -1 if failure
+ |      :raises: Blink1ConnectionFailed if blink(1) is disconnected
  |  
  |  write_pattern_line(self, step_milliseconds, color, pos, ledn=0)
  |      Write a color & step time color pattern line to RAM
