@@ -51,7 +51,7 @@ class ColorCorrect(object):
 
         All gamma values should be 0 > x >= 1
         """
-            
+
         self.gamma = gamma
 
         if isinstance(white_point, str):
@@ -130,7 +130,7 @@ class Blink1:
         """ Write command to blink(1), low-level internal use
         Send USB Feature Report 0x01 to blink(1) with 8-byte payload
         Note: arg 'buf' must be 8 bytes or bad things happen
-        :return: number of bytes written or -1 if failure
+        :raises: Blink1ConnectionFailed if blink(1) is disconnected
         """
         log.debug("blink1write:" + ",".join('0x%02x' % v for v in buf))
         rc = self.dev.send_feature_report(buf)
@@ -149,7 +149,7 @@ class Blink1:
 
     def fade_to_rgb_uncorrected(self, fade_milliseconds, red, green, blue, ledn=0):
         """ Command blink(1) to fade to RGB color, no color correction applied.
-        :throws: Blink1ConnectionFailed if blink(1) is disconnected
+        :raises: Blink1ConnectionFailed if blink(1) is disconnected
         """
         action = ord('c')
         fade_time = int(fade_milliseconds / 10)
