@@ -25,7 +25,7 @@ print("waiting 2.5 seconds, unplug to check error raising...");
 time.sleep(2.5)
 
 print("fading to #000000")
-blink1.fade_to_color(1000, 0, 0, 0)
+blink1.fade_to_color(1000, 'black')
 
 print("closing connection to blink(1)")
 blink1.close()
