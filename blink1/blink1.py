@@ -349,19 +349,17 @@ class Blink1(object):
 
         # else, play it in the blink(1)
         num_repeats, colorlist = self.parse_pattern(pattern_str)
-        pattlen = len(colorlist)
-        if pattlen < 32:      # extend out pattern to fill
-            for i in range(0, 32 - pattlen):
-                c = {
-                    'rgb': '#000000',
-                    'time': 0.0,
-                    'ledn': 0,
-                    'millis': 0
-                }
-                colorlist.append(c)
 
-        for i in range(0, 32):
-            c = colorlist[i]
+        empty_color = {
+            'rgb': '#000000',
+            'time': 0.0,
+            'ledn': 0,
+            'millis': 0
+        }
+
+        colorlist += [empty_color] * (32 - len(colorlist))
+
+        for i, c in enumerate(colorlist):
             self.write_pattern_line(c['millis'], c['rgb'], i, c['ledn'])
 
         return self.play(count=num_repeats)
