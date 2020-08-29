@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Python implementation of Tanner Helland's color color conversion code.
 http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
@@ -6,20 +7,21 @@ http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/
 import math
 
 # Aproximate colour temperatures for common lighting conditions.
-COLOR_TEMPERATURES={
-    'candle':1900,
-    'sunrise':2000,
-    'incandescent':2500,
-    'tungsten':3200,
-    'halogen':3350,
-    'sunlight':5000,
-    'overcast':6000,
-    'shade':7000,
-    'blue-sky':10000,
-    'warm-fluorescent':2700,
-    'fluorescent':37500,
-    'cool-fluorescent':5000,
+COLOR_TEMPERATURES = {
+    'candle': 1900,
+    'sunrise': 2000,
+    'incandescent': 2500,
+    'tungsten': 3200,
+    'halogen': 3350,
+    'sunlight': 5000,
+    'overcast': 6000,
+    'shade': 7000,
+    'blue-sky': 10000,
+    'warm-fluorescent': 2700,
+    'fluorescent': 37500,
+    'cool-fluorescent': 5000,
 }
+
 
 def correct_output(luminosity):
     """
@@ -33,6 +35,7 @@ def correct_output(luminosity):
     else:
         val = luminosity
     return round(val)
+
 
 def kelvin_to_rgb(kelvin):
     """
@@ -56,7 +59,7 @@ def kelvin_to_rgb(kelvin):
     else:
         green = 288.1221695283 * ((temp - 60) ** -0.0755148492)
 
-    #Calculate Blue:
+    # Calculate Blue:
     if temp > 66:
         blue = 255
     elif temp <= 19:

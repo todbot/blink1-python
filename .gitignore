@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
 # C extensions
 *.so
 
@@ -99,3 +98,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# PyCharm
+.idea
