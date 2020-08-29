@@ -8,7 +8,6 @@ All platforms:
 """
 import logging
 import time
-import sys
 from contextlib import contextmanager
 import webcolors
 import hid
@@ -127,13 +126,14 @@ class Blink1(object):
             devs = hid.enumerate(VENDOR_ID, PRODUCT_ID)
             serials = list(map(lambda d: d.get('serial_number'), devs))
             return serials
-        except IOError as e:
+        except IOError:
             return []
 
-    def notfound(self):
+    @staticmethod
+    def notfound():
         return None  # fixme what to do here
 
-    def write(self,buf):
+    def write(self, buf):
         """ Write command to blink(1), low-level internal use
         Send USB Feature Report 0x01 to blink(1) with 8-byte payload
         Note: arg 'buf' must be 8 bytes or bad things happen
@@ -266,7 +266,7 @@ class Blink1(object):
         :param ledn: LED to adjust, 0=all, 1=LEDA, 2=LEDB
         :raises: Blink1ConnectionFailed: if blink(1) is disconnected
         """
-        buf = [REPORT_ID, ord('l'), ledn, 0,0,0,0,0,0]
+        buf = [REPORT_ID, ord('l'), ledn, 0, 0, 0, 0, 0, 0]
         self.write(buf)
 
     def write_pattern_line(self, step_milliseconds, color, pos, ledn=0):
@@ -283,7 +283,7 @@ class Blink1(object):
         step_time = int(step_milliseconds / 10)
         th = (step_time & 0xff00) >> 8
         tl = step_time & 0x00ff
-        buf = [REPORT_ID, ord('P'), int(r), int(g), int(b), th,tl, pos, 0]
+        buf = [REPORT_ID, ord('P'), int(r), int(g), int(b), th, tl, pos, 0]
         self.write(buf)
 
     def read_pattern_line(self, pos):
@@ -299,7 +299,7 @@ class Blink1(object):
         r, g, b = buf[2:4]
 
         step_millis = ((buf[5] << 8) | buf[6]) * 10
-        return (r, g, b, step_millis)
+        return r, g, b, step_millis
 
     def read_pattern(self):
         """ Read the entire color pattern
@@ -316,7 +316,7 @@ class Blink1(object):
         :raises: Blink1ConnectionFailed: if blink(1) is disconnected
         """
         for i in range(0, 16):  # FIXME: pattern length
-          self.write_pattern_line(self.dev, 0, 'black', i)
+            self.write_pattern_line(0, 'black', i)
 
     def play_pattern(self, pattern_str, onDevice=True):
         """ Play a Blink1Control-style pattern string
@@ -395,7 +395,7 @@ class Blink1(object):
 
             colorlist.append(color)
 
-        return (num_repeats, colorlist)
+        return num_repeats, colorlist
 
     def server_tickle(self, enable, timeout_millis=0, stay_lit=False, start_pos=0, end_pos=16):
         """Enable/disable servertickle / serverdown watchdog
