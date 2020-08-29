@@ -36,8 +36,8 @@ DEFAULT_GAMMA = (2, 2, 2)
 DEFAULT_WHITE_POINT = (255, 255, 255)
 
 REPORT_ID = 0x01
-VENDOR_ID = 0x27b8
-PRODUCT_ID = 0x01ed
+VENDOR_ID = 0x27B8
+PRODUCT_ID = 0x01ED
 
 REPORT_SIZE = 9  # 8 bytes + 1 byte reportId
 
@@ -143,7 +143,9 @@ class Blink1(object):
         rc = self.dev.send_feature_report(buf)
         # return self.dev.send_feature_report(buf)
         if rc != REPORT_SIZE:
-            raise Blink1ConnectionFailed("write returned %d instead of %d" % (rc, REPORT_SIZE))
+            raise Blink1ConnectionFailed(
+                "write returned %d instead of %d" % (rc, REPORT_SIZE)
+            )
 
     def read(self):
         """ Read command result from blink(1), low-level internal use
@@ -154,7 +156,14 @@ class Blink1(object):
         log.debug("blink1read: " + ",".join('0x%02x' % v for v in buf))
         return buf
 
-    def fade_to_rgb_uncorrected(self, fade_milliseconds, red, green, blue, ledn=0):
+    def fade_to_rgb_uncorrected(
+        self,
+        fade_milliseconds,
+        red,
+        green,
+        blue,
+        ledn=0
+    ):
         """ Command blink(1) to fade to RGB color, no color correction applied.
         :raises: Blink1ConnectionFailed if blink(1) is disconnected
         """
@@ -241,7 +250,17 @@ class Blink1(object):
         if self.dev is None:
             raise Blink1ConnectionFailed("must open first")
 
-        buf = [REPORT_ID, ord('p'), 1, int(start_pos), int(end_pos), int(count), 0, 0, 0]
+        buf = [
+            REPORT_ID,
+            ord('p'),
+            1,
+            int(start_pos),
+            int(end_pos),
+            int(count),
+            0,
+            0,
+            0
+        ]
         self.write(buf)
 
     def stop(self):
@@ -307,7 +326,7 @@ class Blink1(object):
         :raises: Blink1ConnectionFailed: if blink(1) is disconnected
         """
         pattern = []
-        for i in range(0, 16):    # FIXME: adjustable for diff blink(1) models
+        for i in range(0, 16):  # FIXME: adjustable for diff blink(1) models
             pattern.append(self.read_pattern_line(i))
         return pattern
 
@@ -397,7 +416,14 @@ class Blink1(object):
 
         return num_repeats, colorlist
 
-    def server_tickle(self, enable, timeout_millis=0, stay_lit=False, start_pos=0, end_pos=16):
+    def server_tickle(
+        self,
+        enable,
+        timeout_millis=0,
+        stay_lit=False,
+        start_pos=0,
+        end_pos=16
+    ):
         """Enable/disable servertickle / serverdown watchdog
         :param: enable: Set True to enable serverTickle
         :param: timeout_millis: millisecs until servertickle is triggered
