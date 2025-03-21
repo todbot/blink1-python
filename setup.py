@@ -1,6 +1,6 @@
 from setuptools import setup
 
-REVISION = '0.3.2'
+REVISION = '0.4.0'
 PROJECT_NAME = 'blink1'
 PROJECT_AUTHORS = "Salim Fadhley, Tod E. Kurt"
 PROJECT_EMAILS = 'salimfadhley@gmail.com, todbotdotcom@gmail.com'
