@@ -34,7 +34,7 @@ play_on_blink1 = True
 #play_on_blink1 = False
 
 if( play_on_blink1 ):
-    print("playing on blink1 device (thus not blocking)");
+    print("playing pattern on blink1 device (thus not blocking)");
     blink1.play_pattern( patt_str )
     print("sleeping for 10 secs...")
     time.sleep(10)

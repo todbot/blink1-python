@@ -315,7 +315,7 @@ class Blink1(object):
         self.write(buf)
         buf = self.read()
 
-        r, g, b = buf[2:4]
+        r, g, b = buf[2:5]
 
         step_millis = ((buf[5] << 8) | buf[6]) * 10
         return r, g, b, step_millis
@@ -326,7 +326,7 @@ class Blink1(object):
         :raises: Blink1ConnectionFailed: if blink(1) is disconnected
         """
         pattern = []
-        for i in range(0, 16):  # FIXME: adjustable for diff blink(1) models
+        for i in range(0, 32):  # FIXME: adjustable for diff blink(1) models
             pattern.append(self.read_pattern_line(i))
         return pattern
 
@@ -334,7 +334,7 @@ class Blink1(object):
         """ Clear entire color pattern in blink(1)
         :raises: Blink1ConnectionFailed: if blink(1) is disconnected
         """
-        for i in range(0, 16):  # FIXME: pattern length
+        for i in range(0, 32):  # FIXME: pattern length
             self.write_pattern_line(0, 'black', i)
 
     def play_pattern(self, pattern_str, onDevice=True):
