@@ -68,10 +68,10 @@ And udev rules for non-root user access to blink(1) devices:
 ```
 
 ### Mac OS X:
-Install [Xcode](https://developer.apple.com/xcode/_) with command-line tools.
+Install [Xcode](https://developer.apple.com/xcode/) with command-line tools.
 
 ### Windows:
-You will need [Microsoft Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
+You may need [Microsoft Visual C++ Compiler for Python 2.7](http://aka.ms/vcpython27)
 
 ## Use
 
@@ -155,7 +155,7 @@ blink1.play( 3,5, 4)  # play that sub-loop 4 times
 
 To save the pattern to non-volatile memory (overwriting the factory pattern):
 ```
-blink1.savePattern()
+blink1.save_pattern()
 ```
 
 To quickly play a pattern in Blink1Control-style string format:
