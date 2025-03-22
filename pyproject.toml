@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools >= 61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blink1"
+version = "0.4.0"
+description = "Official blink(1) control library"
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Salim Fadhley", email = "salimfadhley@gmail.com" },
+    { name = "Tod E. Kurt", email = "todbotdotcom@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+    "click",
+    "hidapi>=0.13.1",
+    "webcolors",
+]
+
+[project.scripts]
+blink1-flash = "blink1.flash:flash"
+blink1-shine = "blink1.shine:shine"
+
+[project.urls]
+Homepage = "https://github.com/todbot/blink1-python"
+
+[tool.setuptools.packages.find]
+where = ["."]
