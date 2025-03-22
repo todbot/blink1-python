@@ -27,7 +27,7 @@ https://blink1.thingm.com/
 Features of this library:
 
 * Test coverage on all library components
-* Python 3.x and Python 2.7.x compatible
+* Python 3.x compatible
 * Automatic installation via Python Package Index
 * High level control over the blink(1)
 * Single implementation with `cython-hidapi` USB HID API (PyUSB cannot access HID devices on all OSes)
@@ -384,21 +384,17 @@ Having checked out the `blink1-python` library, cd to its directory and run the 
 ```
   git clone https://github.com/todbot/blink1-python
   cd blink1-python
-  python3 setup.py develop
-  python3 ./blink1_demo/demo1.py
-```
-or
-```
   pip3 install --editable .
+  python3 ./blink1_demo/demo1.py
 ```
 You can now use the `blink1` package on your system and edit it.
 
 To get internal blink1 library debug, messages set the environment variable `DEBUGBLINK1`:
 ```
-DEBUGBLINK1=1 python3 ./blink1_demo/demo1.py
+DEBUGBLINK1=1 python3 ./blink1_demo/demo_logging.py
 ```
 
 To uninstall the development version:
 ```
-  python3 setup.py develop --uninstall
+  pip3 uninstall blink1
 ```

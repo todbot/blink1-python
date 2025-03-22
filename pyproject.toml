@@ -36,3 +36,4 @@ Homepage = "https://github.com/todbot/blink1-python"
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["blink1"]
