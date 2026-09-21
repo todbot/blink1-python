@@ -1,10 +1,11 @@
-
-
 Python Blink(1) library
 ========================
 
 Official Python library for blink(1) USB RGB LED notification devices
 https://blink1.thingm.com/
+
+[![CI](https://github.com/todbot/blink1-python/actions/workflows/ci.yml/badge.svg)](https://github.com/todbot/blink1-python/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/blink1.svg)](https://pypi.org/project/blink1/)
 
 * [About this library](#about-this-library)
 * [Installation](#installation)
@@ -31,9 +32,16 @@ Features of this library:
 * Python 3.9+
 * Automatic installation via Python Package Index
 * High level control over the blink(1)
+* Type hints throughout, with a `py.typed` marker so they reach your
+  type checker
 * Single implementation with `cython-hidapi` USB HID API (PyUSB cannot access HID devices on all OSes)
 
 This library lives at https://github.com/todbot/blink1-python
+
+Changes are recorded in [CHANGELOG.md](./CHANGELOG.md). If you are
+upgrading from 0.4.0, read its "Changed" section first: 1.0.0 has five
+behavior changes, including colors outside 0-255 now raising
+`InvalidColor`, and a corrected value for the `fluorescent` white point.
 
 Originally written by @salimfadhley, at https://github.com/salimfadhley/blink1/tree/master/python/pypi.
 Moved to this repository and rewritten for `cython-hidapi` by @todbot.
@@ -47,9 +55,30 @@ additional components required in a single step:
 ```
 
 ## Example Code and Installed scripts
-Two command-line scripts `blink1-shine` and `blink1-flash` are installed when this library is installed.
-* `blink1-shine` – Tell the blink(1) to be specifc steady color
-* `blink1-flash` – Flash the blink(1) two different colors at a specific rate
+Two command-line scripts `blink1-shine` and `blink1-flash` are installed
+when this library is installed.
+
+`blink1-shine` sets the blink(1) to a specific steady color:
+```
+  blink1-shine --color red
+  blink1-shine --color '#ff00ff' --fade 1.5
+  blink1-shine --switch-off          # set the color, then turn it off on exit
+  blink1-shine --serial 20002345     # pick one of several blink(1)s
+```
+Note `--switch-off` is off by default, so the light stays lit after the
+command exits. This is the opposite of the `blink1()` context manager,
+which switches off unless told otherwise.
+
+`blink1-flash` flashes between two colors at a given rate:
+```
+  blink1-flash --on white --off black --repeat 5
+  blink1-flash --duration 1.5 --fade 0.1
+  blink1-flash --serial 20002345
+```
+
+Both report a missing blink(1) or an unrecognized color as a one-line
+error rather than a traceback. Run either with `--help` for the full
+list of options.
 
 For examples, see the [`blink1_demo`](./blink1_demo/) directory for several examples on how to use this library.
 
@@ -59,7 +88,7 @@ The `blink1-python` library relies on [cython-hidapi](https://github.com/trezor/
 ### Linux:
 The following extra packages must be installed:
 ```
-  sudo apt-get install python-dev libusb-1.0-0-dev libudev-dev
+  sudo apt-get install python3-dev libusb-1.0-0-dev libudev-dev
 ```
 And udev rules for non-root user access to blink(1) devices:
 ```
@@ -87,6 +116,8 @@ The simplest way to use this library is via a context manager.
 ```
 
 When the blink1() block exits the light is automatically switched off.
+Pass `switch_off=False` to leave it lit.
+
 It is also possible to access the exact same set of functions without the context manager:
 ```
   import time
@@ -108,12 +139,18 @@ To list all connected blink(1) devices:
   print("blink(1) devices found: " + ','.join(blink1_serials))
 ```
 
-To open a particular blink(1) device by serial number, pass in its serial number as a Unicode string:
+To open a particular blink(1) device by serial number, pass its serial
+number as a string:
 ```
-  from blink1.blink1 import blink1
-  blink1 = Blink1(serial_number=u'20002345')
-  blink1.fade_to_rgb(1000, 255,0,255)
-  blink1.close()
+  from blink1.blink1 import Blink1
+  b1 = Blink1(serial_number='20002345')
+  b1.fade_to_rgb(1000, 255,0,255)
+  b1.close()
+```
+The context manager takes the same argument:
+```
+  with blink1(serial_number='20002345') as b1:
+    b1.fade_to_color(1000, 'purple')
 ```
 
 ### Import styles
@@ -131,69 +168,99 @@ The context manager is also re-exported from the package as `blink1_ctx`.
 It is not exported as `blink1`, because the package and its main module
 share that name and rebinding it would break `import blink1.blink1`.
 
+The package also exports the exception classes, `ColorCorrect`,
+`kelvin_to_rgb`, `COLOR_TEMPERATURES`, `VENDOR_ID`, `PRODUCT_ID` and
+`__version__`:
+```
+  from blink1 import Blink1, Blink1ConnectionFailed, InvalidColor
+  from blink1 import COLOR_TEMPERATURES, __version__
+```
+
 `Blink1` is itself a context manager, so this works too:
 ```
   with Blink1() as b1:
     b1.fade_to_color(100, 'navy')
 ```
+Note the difference from `blink1()`: leaving a `with Blink1()` block
+closes the device but leaves the light on. Only `blink1()` switches it
+off for you.
 
 ### Colors
 
 There are a number of ways to specify colors in this library:
 ```
-  blink1.fade_to_color(1000, '#ffffff') # Hexdecimal RGB as a string
-  blink1.fade_to_color(1000, 'green') # Named color - any color name understood by css3
-  blink1.fade_to_color(1000, (22,33,44)) # RGB as a tuple. Luminance values are 0 <= lum <= 255
+  b1.fade_to_color(1000, '#ffffff') # Hexadecimal RGB as a string
+  b1.fade_to_color(1000, 'green') # Named color - any color name understood by css3
+  b1.fade_to_color(1000, (22,33,44)) # RGB as a tuple, each 0 <= lum <= 255
+  b1.fade_to_color(1000, [22,33,44]) # a list works too
 ```
-Attempting to select a color outside the plausible range will generate an InvalidColor exception.
+An unknown color name, a malformed hexcode, a sequence that is not three
+channels, or a channel outside 0-255 all raise `InvalidColor`.
 
 
 ### Pattern playing
 
-The blink(1) device has a non-volatile color pattern memory:
-16 lines on a mk2, 32 on a mk3. The library detects which from the
-firmware version and exposes it as `blink1.pattern_lines`; pass
-`Blink1(pattern_lines=...)` to set it yourself and skip detection.
+The blink(1) device has a non-volatile color pattern memory.
 This color pattern plays automatically if power is applied but not connected to a computer.
 You can also trigger this pattern (or sub-patterns) over USB,
 leaving your application free to do other things besides blink lights.
+
+The memory holds 16 lines on a mk2 and 32 on an mk3. The library works
+out which from the firmware version when it opens the device, and
+exposes the result as `b1.pattern_lines`. Pass
+`Blink1(pattern_lines=...)` to set it yourself and skip the detection.
 
 Each line in the color pattern consists of an R,G,B triplet and a fade time to reach that color.
 
 To play the pattern in blink(1) or sub-patterns:
 ```
-blink1.play()  # play entire color pattern, infinitely looped
-blink1.stop()  # stop a color pattern playing (if playing)
+b1.play()  # play entire color pattern, infinitely looped
+b1.stop()  # stop a color pattern playing (if playing)
 
-blink1.play(2,3, count=7)  # play color pattern lines 2,3 in a loop 7 times
+b1.play(2,3, count=7)  # play color pattern lines 2,3 in a loop 7 times
 ```
 
 To alter the lines of the pattern memory:
 ```
 # write 100msec fades to green then yellow then black at lines 3,4,5
-blink1.write_pattern_line( 100, 'green',  3)
-blink1.write_pattern_line( 100, 'yellow', 4)
-blink1.write_pattern_line( 100, 'black',  5)
+b1.write_pattern_line( 100, 'green',  3)
+b1.write_pattern_line( 100, 'yellow', 4)
+b1.write_pattern_line( 100, 'black',  5)
 
-blink1.play( 3,5, 4)  # play that sub-loop 4 times
+b1.play( 3,5, 4)  # play that sub-loop 4 times
 ```
+A `pos` outside the device's pattern memory raises `ValueError`, as does
+an `ledn` outside 0-2. On a mk2 that means lines 0-15 only.
+
+`write_pattern_line` applies gamma correction, while `read_pattern_line`
+returns the raw device values, so reading a line and writing it back
+would compound the correction. Pass `read_pattern_line(pos,
+uncorrect=True)` to undo it and get back roughly what you wrote.
 
 To save the pattern to non-volatile memory (overwriting the factory pattern):
 ```
-blink1.save_pattern()
+b1.save_pattern()
 ```
 
 To quickly play a pattern in Blink1Control-style string format:
 ```
 # play purple on LED1 in 300ms, green on LED2 in 100ms, then swap, for 10 times
 pattern_str = '10, #ff00ff,0.3,1, #00ff00,0.1,2,  #ff00ff,0.3,2, #00ff00,0.1,1'
-blink1.play_pattern(pattern_str)
+b1.play_pattern(pattern_str)
 # wait 5 seconds while the pattern plays on the blink1
 # (or go do something more useful)
 time.sleep(5.0)
 # flash red-off 5 times fast on all LEDs
-blink1.play_pattern('5, #FF0000,0.2,0,#000000,0.2,0')
+b1.play_pattern('5, #FF0000,0.2,0,#000000,0.2,0')
 ```
+Be aware that `play_pattern` overwrites the whole pattern memory, filling
+any lines the string does not cover with black. That is what makes the
+pattern it plays deterministic, but it discards anything written with
+`write_pattern_line` beforehand.
+
+Pass `on_device=False` to play the pattern in the Python process instead
+of on the blink(1), which blocks until it finishes. The original
+`onDevice` spelling still works.
 
 ### Servertickle watchdog
 blink(1) also has a "watchdog" of sorts called "servertickle".
@@ -202,23 +269,26 @@ trigger, playing the stored color pattern.  This is useful to announce
 a computer that has crashed.  The blink(1) will flash on its own until
 told otherwise.
 
-To use, enable severtickle with a timeout value (max timeout 62 seconds):
+To use, enable servertickle with a timeout value (max timeout 62 seconds):
 ```
-blink1.server_tickle(enable=True, timeout_millis=2000)
+b1.server_tickle(enable=True, timeout_millis=2000)
 ```
 
 
 ### Gamma correction
 
-The context manager supports a ''gamma'' argument which allows you to supply a per-channel gamma correction value.
+Both `Blink1` and the context manager take a *gamma* argument, letting
+you supply a per-channel gamma correction value.
 ```
+  import time
   from blink1.blink1 import blink1
 
-  with blink1(gamma=(2, 2, 2)) as b1:
+  with blink1(gamma=(3, 3, 3)) as b1:
     b1.fade_to_color(100, 'pink')
     time.sleep(10)
 ```
-This example provides a gamma correction of 2 to each of the three colour channels.
+This example provides a gamma correction of 3 to each of the three colour
+channels. The library default is `(2, 2, 2)`.
 
 Higher values of gamma make the blink(1) appear more colorful but decrease the brightness of colours.
 
@@ -228,6 +298,8 @@ The human eye's perception of color can be influenced by ambient lighting. In so
 to apply a small color correction in order to make colors appear more accurate. For example, if we were operating
 the blink(1) in a room lit predominantly by candle-light:
 ```
+  from blink1.blink1 import blink1
+
   with blink1(white_point='candle', switch_off=False) as b1:
     b1.fade_to_color(100, 'white')
 ```
@@ -237,8 +309,11 @@ as a more natural white. If we did not apply this kind of color correction the B
 The following values are acceptable white-points:
 
 * Any triple of (r,g,b). Each 0 <= luminance <= 255
-* Any color_temperature expressed as an integer or float in Kelvin
-* A color temperature name.
+* Any color_temperature expressed as an integer or float in Kelvin.
+  The conversion is only meaningful between 1000 K and 40000 K, and
+  values outside that are clamped to it with a logged warning.
+* A color temperature name. An unrecognized name raises
+  `UnknownWhitePoint`, which is both an `InvalidColor` and a `KeyError`.
 
 The library supports the following temperature names:
 
