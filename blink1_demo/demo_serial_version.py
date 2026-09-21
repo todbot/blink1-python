@@ -4,6 +4,8 @@
 demo_serial -- demo of blink1 library showing serial number and versions
 
 """
+import sys
+
 from blink1.blink1 import Blink1
 
 try:

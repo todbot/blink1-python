@@ -1,19 +1,17 @@
 import unittest
 
-import mock
-from blink1.blink1 import Blink1, BlinkConnectionFailed, InvalidColor
+import pytest
+
+from blink1.blink1 import Blink1, Blink1ConnectionFailed, InvalidColor
+
+from .fakehid import DEFAULT_SERIAL, FakeHidMixin
 
 
-class TestSimpleLightControl(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.b1 = Blink1()
+class LightControlChecks:
+    """Assertions that hold whether the device is real or faked.
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.b1.off()
-        cls.b1.close()
-        del cls.b1
+    `self.b1` is supplied by the concrete subclass.
+    """
 
     def testOn(self):
         self.b1.fade_to_color(1000, 'white')
@@ -23,7 +21,7 @@ class TestSimpleLightControl(unittest.TestCase):
             self.b1.fade_to_color(1000, 'moomintrol')
 
     def testAlsoWhite(self):
-        self.b1.fade_to_color(1000, (255,255,255))
+        self.b1.fade_to_color(1000, (255, 255, 255))
 
     def testAWhiteShadeOfPale(self):
         self.b1.fade_to_color(1000, '#ffffff')
@@ -39,17 +37,56 @@ class TestSimpleLightControl(unittest.TestCase):
         self.b1.off()
 
     def test_get_firmware_version(self):
-        ver = self.b1.get_version()
+        self.assertTrue(self.b1.get_version())
 
     def test_get_serial_number(self):
-        sn = self.b1.get_serial_number()
+        self.assertTrue(self.b1.get_serial_number())
 
 
-class TestFailedConnection(unittest.TestCase):
+class TestSimpleLightControlFake(FakeHidMixin, LightControlChecks, unittest.TestCase):
+    def setUp(self):
+        self.setUpFakeHid()
+        self.b1 = Blink1(pattern_lines=32)
+        self.addCleanup(self.b1.close)
+
+    def test_serial_matches_enumeration(self):
+        self.assertEqual(self.b1.get_serial_number(), DEFAULT_SERIAL)
+        self.assertEqual(Blink1.list(), [DEFAULT_SERIAL])
+
+    def test_version_from_firmware(self):
+        self.assertEqual(self.b1.get_version(), '306')
+
+
+@pytest.mark.hardware
+class TestSimpleLightControl(LightControlChecks, unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.b1 = Blink1()
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.b1.off()
+        cls.b1.close()
+        del cls.b1
+
+
+class TestFailedConnection(FakeHidMixin, unittest.TestCase):
+    serials = []
+
+    def setUp(self):
+        self.setUpFakeHid()
+
     def testCannotFind(self):
-        with mock.patch('blink1.blink1.PRODUCT_ID', '0101'):
-            with self.assertRaises(BlinkConnectionFailed):
-                b1 = Blink1()
+        with self.assertRaises(Blink1ConnectionFailed):
+            Blink1()
+
+    def testCannotFindBySerial(self):
+        self.fake_hid.serials = ['AAAA1111']
+        with self.assertRaises(Blink1ConnectionFailed):
+            Blink1(serial_number='NOSUCH')
+
+    def testListIsEmpty(self):
+        self.assertEqual(Blink1.list(), [])
 
 
 if __name__ == '__main__':

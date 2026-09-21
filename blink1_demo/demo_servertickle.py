@@ -19,7 +19,7 @@ print("  firmware version: " + blink1.get_version())
 print("setting blink(1) green")
 blink1.fade_to_color(100, 'green')
 
-for i in range(0,5):
+for _i in range(0,5):
     print("enabling server tickle for 5 seconds")
     blink1.server_tickle( enable=True, timeout_millis=5000, stay_lit=True )
     time.sleep(2.0)

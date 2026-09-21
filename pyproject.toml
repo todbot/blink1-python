@@ -1,30 +1,47 @@
 [build-system]
-requires = ["setuptools >= 61.0.0"]
+requires = ["setuptools >= 77.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "blink1"
-version = "0.4.0"
+version = "1.0.0"
 description = "Official blink(1) control library"
 readme = "README.md"
 license = "MIT"
+requires-python = ">=3.9"
 authors = [
     { name = "Salim Fadhley", email = "salimfadhley@gmail.com" },
     { name = "Tod E. Kurt", email = "todbotdotcom@gmail.com" },
 ]
+keywords = ["blink1", "blink(1)", "usb", "hid", "led", "rgb", "notification"]
 classifiers = [
-    "Development Status :: 2 - Pre-Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
     "Natural Language :: English",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Topic :: Software Development :: Testing",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Hardware",
 ]
 dependencies = [
-    "click",
+    "click>=8.0",
     "hidapi>=0.13.1",
-    "webcolors",
+    "webcolors>=1.13",
+]
+
+[project.optional-dependencies]
+dev = [
+    "build",
+    "mypy",
+    "pytest>=8",
+    "ruff",
+    "twine",
 ]
 
 [project.scripts]
@@ -33,7 +50,38 @@ blink1-shine = "blink1.shine:shine"
 
 [project.urls]
 Homepage = "https://github.com/todbot/blink1-python"
+Source = "https://github.com/todbot/blink1-python"
+Issues = "https://github.com/todbot/blink1-python/issues"
+Changelog = "https://github.com/todbot/blink1-python/releases"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["blink1"]
+
+[tool.setuptools.package-data]
+blink1 = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["blink1_tests"]
+addopts = "--strict-markers"
+markers = [
+    "hardware: requires a physical blink(1) device (run with --run-hardware)",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+# The demos are kept deliberately plain; their style debt is not enforced.
+"blink1_demo/*" = ["E401", "E703", "E722"]
+"blink1_tests/hidapitest0.py" = ["E401", "E703"]
+
+[tool.mypy]
+files = ["blink1"]
+
+[[tool.mypy.overrides]]
+module = ["hid", "webcolors"]
+ignore_missing_imports = true

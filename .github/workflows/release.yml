@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  # Manual runs publish to TestPyPI, to rehearse without burning a version
+  workflow_dispatch:
+
+jobs:
+  # Cheap and first: a mistyped tag should fail in seconds, not after the
+  # full test gate below.
+  verify-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # Guarded per-step rather than per-job: a skipped job would skip
+      # everything downstream of it on a manual run
+      - name: Release tag must match the version in pyproject.toml
+        if: github.event_name == 'release'
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          python - <<'EOF'
+          import os, pathlib, sys, tomllib
+
+          data = tomllib.loads(pathlib.Path("pyproject.toml").read_text())
+          version = data["project"]["version"]
+          tag = os.environ["TAG"].removeprefix("v")
+
+          if tag != version:
+              sys.exit(
+                  "release tag %r does not match pyproject.toml version %r; "
+                  "bump the version or retag" % (tag, version)
+              )
+          print("tag %s matches version %s" % (tag, version))
+          EOF
+
+  check:
+    needs: [verify-tag]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Linux HID build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libusb-1.0-0-dev libudev-dev
+
+      - name: Install
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+
+      # hid is imported at module scope, so a bad wheel otherwise fails
+      # collection with an opaque error
+      - name: Check hidapi imports
+        run: python -c "import hid; print(hid.__file__)"
+
+      - name: Test
+        run: python -m pytest -q
+
+      - name: Lint
+        run: python -m ruff check .
+
+      - name: Typecheck
+        run: python -m mypy blink1/
+
+  build:
+    needs: [check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - run: python -m pip install --upgrade pip build twine
+      - run: python -m build
+      - run: python -m twine check dist/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish-pypi:
+    if: github.event_name == 'release'
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write  # for PyPI trusted publishing; no token needed
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-testpypi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: testpypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/

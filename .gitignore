@@ -101,3 +101,9 @@ ENV/
 
 # PyCharm
 .idea
+
+# blink1-python local leftovers
+*.old
+dist.old/
+api.txt
+.DS_Store
