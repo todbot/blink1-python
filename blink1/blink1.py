@@ -53,6 +53,9 @@ PRODUCT_ID = 0x01ED
 
 REPORT_SIZE = 9  # 8 bytes + 1 byte reportId
 
+# The device answers a feature report read with one byte fewer than a write
+READ_SIZE = 8
+
 MAX_LEDN = 2
 
 RGB = Tuple[int, ...]
@@ -262,11 +265,13 @@ class Blink1(object):
         :raises: Blink1ConnectionFailed if blink(1) is disconnected or closed
         """
         self._require_dev()
-        buf = self.dev.get_feature_report(REPORT_ID, REPORT_SIZE)
+        buf = self.dev.get_feature_report(REPORT_ID, READ_SIZE)
         log.debug("blink1read: " + ",".join('0x%02x' % v for v in buf))
-        if len(buf) != REPORT_SIZE:
+        # Short means a truncated or failed read; longer is tolerated, since
+        # how much hidapi hands back varies by platform.
+        if len(buf) < READ_SIZE:
             raise Blink1ConnectionFailed(
-                "read returned %d bytes instead of %d" % (len(buf), REPORT_SIZE)
+                "read returned %d bytes, expected %d" % (len(buf), READ_SIZE)
             )
         return buf
 
