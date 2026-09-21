@@ -12,12 +12,17 @@ blink1 -- Python library for blink(1) USB RGB LED notification devices.
 from importlib.metadata import PackageNotFoundError, version
 
 from .blink1 import (
+    BOOT_NORMAL,
+    BOOT_OFF,
+    BOOT_PLAY,
     PRODUCT_ID,
     VENDOR_ID,
     Blink1,
     Blink1ConnectionFailed,
     ColorCorrect,
     InvalidColor,
+    PlayState,
+    StartupParams,
     UnknownWhitePoint,
 )
 from .blink1 import blink1 as blink1_ctx
@@ -34,6 +39,9 @@ except PackageNotFoundError:  # running from a source tree, not installed
 # the function instead of the module. Use `from blink1.blink1 import blink1`
 # for the original spelling.
 __all__ = [
+    "BOOT_NORMAL",
+    "BOOT_OFF",
+    "BOOT_PLAY",
     "COLOR_TEMPERATURES",
     "PRODUCT_ID",
     "VENDOR_ID",
@@ -41,6 +49,8 @@ __all__ = [
     "Blink1ConnectionFailed",
     "ColorCorrect",
     "InvalidColor",
+    "PlayState",
+    "StartupParams",
     "UnknownWhitePoint",
     "__version__",
     "blink1_ctx",

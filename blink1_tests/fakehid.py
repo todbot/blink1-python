@@ -9,6 +9,7 @@ bytes.
 """
 
 REPORT_ID = 0x01
+MAX_LEDN = 2
 REPORT_SIZE = 9
 # A real blink(1) answers reads with 8 bytes, one fewer than a write takes.
 # Verified against mk3 firmware 304; the fake must match or it validates
@@ -32,6 +33,10 @@ class FakeHidDevice:
         self.extra_read_bytes = 0
         self.pattern = [(0, 0, 0, 0, 0)] * PATTERN_LINES
         self.ledn = 0
+        # current color per led: index 0 is "all", 1 and 2 the two LEDs
+        self.colors = [(0, 0, 0, 0)] * (MAX_LEDN + 1)
+        self.play_state = (0, 0, 0, 0, 0)
+        self.startup_params = (0, 0, 0, 0)
         self._response = [0] * READ_SIZE
 
     @property
@@ -87,6 +92,35 @@ class FakeHidDevice:
             ]
         elif cmd == ord("l"):
             self.ledn = buf[2]
+        elif cmd == ord("c"):
+            ledn = buf[7]
+            entry = (buf[2], buf[3], buf[4], buf[5], buf[6])
+            if ledn == 0:
+                self.colors = [entry[:3] + (entry[3] << 8 | entry[4],)] * len(self.colors)
+            else:
+                self.colors[ledn] = entry[:3] + (entry[3] << 8 | entry[4],)
+        elif cmd == ord("r"):
+            # The fake answers the fade field per the protocol; a real mk3 on
+            # fw302 always answers 0 here.
+            r, g, b, dms = self.colors[buf[7] if buf[7] < len(self.colors) else 0]
+            self._response = [
+                REPORT_ID, cmd, r, g, b, (dms >> 8) & 0xFF, dms & 0xFF, 0,
+            ]
+        elif cmd == ord("p"):
+            # play=buf[2], start, end, count
+            self.play_state = (buf[2], buf[3], buf[4], buf[5], buf[3])
+        elif cmd == ord("S"):
+            playing, start, end, count, pos = self.play_state
+            self._response = [
+                REPORT_ID, cmd, playing, start, end, count, pos, 0,
+            ]
+        elif cmd == ord("B"):
+            self.startup_params = (buf[2], buf[3], buf[4], buf[5])
+        elif cmd == ord("b"):
+            mode, start, end, count = self.startup_params
+            self._response = [
+                REPORT_ID, cmd, mode, start, end, count, 0, 0,
+            ]
         elif cmd == ord("P"):
             pos = buf[7]
             if 0 <= pos < len(self.pattern):

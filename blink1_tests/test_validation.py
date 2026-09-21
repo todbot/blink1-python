@@ -22,6 +22,10 @@ from blink1.blink1 import (
     "moomintrol",
     "#xxxxxx",
     ("a", "b", "c"),
+    "255,0",
+    "1,2,3,4",
+    "300,0,0",
+    "zz,0,0",
 ])
 def test_bad_colors_raise_invalid_color(bad):
     with pytest.raises(InvalidColor):
@@ -33,6 +37,12 @@ def test_bad_colors_raise_invalid_color(bad):
     ("green", (0, 128, 0)),
     ((22, 33, 44), (22, 33, 44)),
     ([22, 33, 44], (22, 33, 44)),
+    # the forms blink1-tool's parsecolor() accepts
+    ("FF00FF", (255, 0, 255)),
+    ("ff00ff", (255, 0, 255)),
+    ("255,0,255", (255, 0, 255)),
+    ("0xff,0x00,0xff", (255, 0, 255)),
+    (" 255 , 0 , 255 ", (255, 0, 255)),
 ])
 def test_good_colors(good, expected):
     assert tuple(Blink1.color_to_rgb(good)) == expected

@@ -18,6 +18,8 @@ https://blink1.thingm.com/
    * [Import styles](#import-styles)
    * [Colors](#colors)
    * [Pattern playing](#pattern-playing)
+   * [Reading device state](#reading-device-state)
+   * [Startup parameters](#startup-parameters)
    * [Servertickle watchdog](#servertickle-watchdog)
    * [Gamma correction](#gamma-correction)
    * [White point correction](#white-point-correction)
@@ -109,9 +111,24 @@ Install [Xcode](https://developer.apple.com/xcode/) with command-line tools.
 ### Windows:
 You may need the [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 
+
 ## Use
 
-The simplest way to use this library is via a context manager.
+The standard API has open/use/close semantics:
+```
+  import time
+  from blink1 import Blink1
+
+  b1 = Blink1()
+  b1.fade_to_rgb(1000, 64, 64, 64)
+  time.sleep(3)
+  b1.fade_to_rgb(1000, 255, 255, 255)
+  b1.close()
+```
+
+Note you must `.close()` a blink(1) after opening it. 
+
+To avoid having to explicitly open/close, use via a context manager.
 ```
   import time
   from blink1.blink1 import blink1
@@ -122,25 +139,11 @@ The simplest way to use this library is via a context manager.
 ```
 
 When the blink1() block exits the light is automatically switched off.
-Pass `switch_off=False` to leave it lit.
-
-It is also possible to access the exact same set of functions without the context manager:
-```
-  import time
-  from blink1.blink1 import Blink1
-
-  b1 = Blink1()
-  b1.fade_to_rgb(1000, 64, 64, 64)
-  time.sleep(3)
-  b1.fade_to_rgb(1000, 255, 255, 255)
-```
-
-Unlike the context manager, this demo will leave the blink(1) open at the end of execution.
-To close it, use the `b1.close()` method.
+To leave it lit, use `with blink1(switch_off=False)`. 
 
 To list all connected blink(1) devices:
 ```
-  from blink1.blink1 import Blink1
+  from blink1 import Blink1
   blink1_serials = Blink1.list()
   print("blink(1) devices found: " + ','.join(blink1_serials))
 ```
@@ -148,7 +151,7 @@ To list all connected blink(1) devices:
 To open a particular blink(1) device by serial number, pass its serial
 number as a string:
 ```
-  from blink1.blink1 import Blink1
+  from blink1 import Blink1
   b1 = Blink1(serial_number='20002345')
   b1.fade_to_rgb(1000, 255,0,255)
   b1.close()
@@ -165,7 +168,7 @@ The short form works from the package itself:
 ```
   from blink1 import Blink1
 ```
-The original, fully-qualified form keeps working, and is the only way to
+The pre-1.0 fully-qualified form keeps working, and is the only way to
 get the context manager under its original name:
 ```
   from blink1.blink1 import Blink1, blink1
@@ -256,8 +259,8 @@ b1.play_pattern(pattern_str)
 # wait 5 seconds while the pattern plays on the blink1
 # (or go do something more useful)
 time.sleep(5.0)
-# flash red-off 5 times fast on all LEDs
-b1.play_pattern('5, #FF0000,0.2,0,#000000,0.2,0')
+# flash purple-off 5 times fast on all LEDs
+b1.play_pattern('5, #FF00FF,0.2,0,#000000,0.2,0')
 ```
 Be aware that `play_pattern` overwrites the whole pattern memory, filling
 any lines the string does not cover with black. That is what makes the
@@ -268,7 +271,57 @@ Pass `on_device=False` to play the pattern in the Python process instead
 of on the blink(1), which blocks until it finishes. The original
 `onDevice` spelling still works.
 
+### Reading device state
+
+To read the current color of an LED:
+```
+r, g, b, fade_millis = b1.read_rgb()      # 0 = all/first LED
+r, g, b, fade_millis = b1.read_rgb(2)     # LED B
+```
+The device stores the gamma-corrected value that was sent to it, so a
+plain read gives back a darker triplet than you wrote. Pass
+`uncorrect=True` to map it back:
+```
+b1.fade_to_rgb(0, 200, 100, 50)
+b1.read_rgb()                  # (157, 39, 10, 0) on the default gamma
+b1.read_rgb(uncorrect=True)    # (200, 100, 50, 0)
+```
+`fade_millis` is always set to zero in current blink(1) firmware. 
+This may change in the future. 
+
+To find out whether a color pattern is playing, and where it is up to:
+```
+state = b1.read_play_state()
+# PlayState(playing=True, start_pos=0, end_pos=31, repeats=3, pos=1)
+if state.playing:
+    print("on line", state.pos, "with", state.repeats, "plays left")
+```
+`repeats` is how many plays remain, with 0 meaning forever. The field is
+called `repeats` rather than `count` because a tuple already has a
+`count` method.
+
+### Startup parameters
+
+A blink(1) plugged into a USB charger with no computer decides for itself
+what to do. On firmware 206+ and above devices, you can set that:
+```
+from blink1 import BOOT_NORMAL, BOOT_PLAY, BOOT_OFF
+
+b1.get_startup_params()
+# StartupParams(bootmode=0, start_pos=0, end_pos=31, repeats=0)
+
+# play pattern lines 0-5 forever whenever it powers up unattached
+b1.set_startup_params(BOOT_PLAY, 0, 5, 0)
+
+b1.set_startup_params(BOOT_OFF)       # stay dark
+b1.set_startup_params(BOOT_NORMAL)    # factory behavior
+```
+This setting is non-volatile: it survives unplugging. On firmware older
+than 206 the commands are not implemented and fail silently, so check
+`b1.get_version()` if you need to be sure.
+
 ### Servertickle watchdog
+
 blink(1) also has a "watchdog" of sorts called "servertickle".
 When enabled, you must periodically send it to the blink(1) or it will
 trigger, playing the stored color pattern.  This is useful to announce
@@ -300,17 +353,20 @@ Higher values of gamma make the blink(1) appear more colorful but decrease the b
 
 ### White point correction
 
-The human eye's perception of color can be influenced by ambient lighting. In some circumstances it may be desirable
-to apply a small color correction in order to make colors appear more accurate. For example, if we were operating
-the blink(1) in a room lit predominantly by candle-light:
+The human eye's perception of color can be influenced by ambient lighting. 
+In some circumstances it may be desirable
+to apply a small color correction in order to make colors appear more accurate.
+For example, if we were operating the blink(1) in a room lit predominantly 
+by candle-light:
 ```
   from blink1.blink1 import blink1
 
   with blink1(white_point='candle', switch_off=False) as b1:
     b1.fade_to_color(100, 'white')
 ```
-Viewed in daylight this would make the Blink(1) appear yellowish, however in a candle-lit room this would be perceived
-as a more natural white. If we did not apply this kind of color correction the Blink(1) would appear blueish.
+Viewed in daylight this would make the Blink(1) appear yellowish, 
+however in a candle-lit room this would be perceived as a more natural white. 
+If we did not apply this kind of color correction the Blink(1) would appear blueish.
 
 The following values are acceptable white-points:
 
@@ -322,19 +378,7 @@ The following values are acceptable white-points:
   `UnknownWhitePoint`, which is both an `InvalidColor` and a `KeyError`.
 
 The library supports the following temperature names:
-
-* candle
-* sunrise
-* incandescent
-* tungsten
-* halogen
-* sunlight
-* overcast
-* shade
-* blue-sky
-* warm-fluorescent
-* fluorescent
-* cool-fluorescent
+candle, sunrise, incandescent, tungsten, halogen, sunlight, overcast, shade, blue-sky, warm-fluorescent, fluorescent, cool-fluorescent
 
 ## API reference
 
@@ -420,6 +464,14 @@ InvalidColor and a KeyError).
      |      :return blink(1) serial number as string
      |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
      |
+     |  get_startup_params(self) -> 'StartupParams'
+     |      Read what the blink(1) does when powered with no computer
+     |      :return StartupParams of (bootmode, start_pos, end_pos, repeats)
+     |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+     |
+     |      Needs firmware 206+ or an mk3; older devices answer with
+     |      whatever the unimplemented command leaves in the buffer.
+     |
      |  get_version(self) -> 'str'
      |      Get blink(1) firmware version
      |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
@@ -478,6 +530,23 @@ InvalidColor and a KeyError).
      |      :return pattern line data as tuple (r,g,b, step_millis)
      |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
      |
+     |  read_play_state(self) -> 'PlayState'
+     |      Read whether a color pattern is playing, and where
+     |      :return PlayState of (playing, start_pos, end_pos, repeats, pos)
+     |          where repeats is how many plays are left, 0 meaning forever
+     |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+     |
+     |  read_rgb(self, ledn: 'int' = 0, uncorrect: 'bool' = False) -> 'Tuple[Any, ...]'
+     |      Read the current color of an LED
+     |      :param ledn: which LED to read (0=all/first, 1=LED A, 2=LED B)
+     |      :param uncorrect: undo the gamma correction applied on the way out,
+     |          so the value resembles what was passed to fade_to_rgb()
+     |      :return tuple of (r, g, b, fade_millis)
+     |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+     |
+     |      fade_millis is the protocol's remaining-fade field, but an mk3 on
+     |      firmware 302 answers 0 for it even mid-fade. Do not rely on it.
+     |
      |  save_pattern(self) -> 'None'
      |      Save internal RAM pattern to flash
      |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
@@ -502,6 +571,24 @@ InvalidColor and a KeyError).
      |      Set the 'current LED' value for writePatternLine
      |      :param ledn: LED to adjust, 0=all, 1=LEDA, 2=LEDB
      |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+     |
+     |  set_startup_params(
+     |      self,
+     |      bootmode: 'int' = 0,
+     |      start_pos: 'int' = 0,
+     |      end_pos: 'int' = 0,
+     |      count: 'int' = 0
+     |  ) -> 'None'
+     |      Set what the blink(1) does when powered with no computer
+     |      :param bootmode: BOOT_NORMAL, BOOT_PLAY or BOOT_OFF
+     |      :param start_pos: sub-pattern start line, for BOOT_PLAY
+     |      :param end_pos: sub-pattern end line, for BOOT_PLAY
+     |      :param count: times to play, 0=forever
+     |      :raises: ValueError: if bootmode or a position is out of range
+     |      :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+     |
+     |      This is non-volatile: it outlives unplugging the device. Needs
+     |      firmware 206+ or an mk3, and fails silently on older devices.
      |
      |  stop(self)
      |      Stop internal color pattern playing

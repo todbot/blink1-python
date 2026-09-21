@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.1.0 (unreleased)
+
+### Added
+
+Three gaps against the C library, `blink1-lib`, all additive:
+
+- `read_rgb(ledn=0)` returns the current color of an LED as
+  `(r, g, b, fade_millis)`. Takes `uncorrect=True`, like
+  `read_pattern_line`, to undo the gamma correction applied on the way
+  out. Note `fade_millis` is part of the protocol but an mk3 on firmware
+  302 always answers 0 for it.
+- `read_play_state()` returns a `PlayState` named tuple of
+  `(playing, start_pos, end_pos, repeats, pos)`, so you can tell whether
+  a pattern is running and how far through it is. `repeats` is the number
+  of plays left, 0 meaning forever; it is not called `count` because that
+  would shadow `tuple.count`.
+- `get_startup_params()` and `set_startup_params()` read and write what
+  the blink(1) does when powered with no computer attached, with
+  `BOOT_NORMAL`, `BOOT_PLAY` and `BOOT_OFF` exported for the mode. The
+  setting is non-volatile. Needs firmware 206+ or an mk3; older devices
+  do not implement the commands and fail silently.
+- `color_to_rgb()` now accepts the remaining forms `blink1-tool` takes:
+  a bare hexcode `FF00FF`, and decimal or hex triples `255,0,255` and
+  `0xff,0x00,0xff`. Named colors, `#ff00ff`, tuples and lists work as
+  before, and a name is still tried ahead of bare hex so no existing
+  color name changes meaning.
+
+`PlayState`, `StartupParams` and the three `BOOT_*` constants are
+exported from the package.
+
 ## 1.0.1 - 21 Sep 2026
 
 ### Fixed

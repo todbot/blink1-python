@@ -13,7 +13,7 @@ import os
 import time
 import warnings
 from contextlib import contextmanager
-from typing import Any, Iterator, List, Sequence, Tuple, Union
+from typing import Any, Iterator, List, NamedTuple, Sequence, Tuple, Union
 
 import hid
 import webcolors
@@ -63,6 +63,29 @@ MAX_LEDN = 2
 RGB = Tuple[int, ...]
 Color = Union[str, Sequence[float]]
 WhitePoint = Union[str, float, Sequence[float]]
+
+# What the blink(1) does when powered with no computer attached.
+BOOT_NORMAL = 0
+BOOT_PLAY = 1
+BOOT_OFF = 2
+
+
+class PlayState(NamedTuple):
+    # 'repeats' rather than 'count': a NamedTuple field named count would
+    # shadow tuple.count
+    playing: bool
+    start_pos: int
+    end_pos: int
+    repeats: int
+    pos: int
+
+
+class StartupParams(NamedTuple):
+    bootmode: int
+    start_pos: int
+    end_pos: int
+    repeats: int
+
 
 # mk2 has 16 color pattern lines, mk3 has 32. Firmware 3xx is mk3.
 PATTERN_LINES_MK2 = 16
@@ -336,6 +359,23 @@ class Blink1(object):
             raise InvalidColor(
                 "expected a color name, hexcode or (r,g,b), got %r" % (color,)
             )
+
+        if ',' in color:
+            parts = color.split(',')
+            if len(parts) != 3:
+                raise InvalidColor(
+                    "expected 3 channels, got %d: %r" % (len(parts), color)
+                )
+            try:
+                # base 0 so both '255' and '0xff' parse
+                channels = [int(part.strip(), 0) for part in parts]
+            except ValueError as e:
+                raise InvalidColor(color) from e
+            return tuple(
+                _validate_channel(c, name)
+                for c, name in zip(channels, ('red', 'green', 'blue'))
+            )
+
         if color.startswith('#'):
             try:
                 return webcolors.hex_to_rgb(color)
@@ -344,6 +384,13 @@ class Blink1(object):
 
         try:
             return webcolors.name_to_rgb(color)
+        except ValueError:
+            pass
+
+        # A bare hexcode, as blink1-tool accepts. Tried after names so no
+        # existing color name can be reinterpreted as hex.
+        try:
+            return webcolors.hex_to_rgb('#' + color)
         except ValueError as e:
             raise InvalidColor(color) from e
 
@@ -492,6 +539,80 @@ class Blink1(object):
             self.read_pattern_line(i, uncorrect=uncorrect)
             for i in range(self.pattern_lines)
         ]
+
+    def read_rgb(self, ledn: int = 0,
+                 uncorrect: bool = False) -> Tuple[Any, ...]:
+        """ Read the current color of an LED
+        :param ledn: which LED to read (0=all/first, 1=LED A, 2=LED B)
+        :param uncorrect: undo the gamma correction applied on the way out,
+            so the value resembles what was passed to fade_to_rgb()
+        :return tuple of (r, g, b, fade_millis)
+        :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+
+        fade_millis is the protocol's remaining-fade field, but an mk3 on
+        firmware 302 answers 0 for it even mid-fade. Do not rely on it.
+        """
+        self.write([REPORT_ID, ord('r'), 0, 0, 0, 0, 0, _validate_ledn(ledn), 0])
+        buf = self.read()
+
+        r, g, b = buf[2:5]
+        if uncorrect:
+            r, g, b = self.cc.uncorrect(r, g, b)
+
+        fade_millis = ((buf[5] << 8) | buf[6]) * 10
+        return r, g, b, fade_millis
+
+    def read_play_state(self) -> PlayState:
+        """ Read whether a color pattern is playing, and where
+        :return PlayState of (playing, start_pos, end_pos, repeats, pos)
+            where repeats is how many plays are left, 0 meaning forever
+        :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+        """
+        self.write([REPORT_ID, ord('S'), 0, 0, 0, 0, 0, 0, 0])
+        buf = self.read()
+        return PlayState(bool(buf[2]), buf[3], buf[4], buf[5], buf[6])
+
+    def get_startup_params(self) -> StartupParams:
+        """ Read what the blink(1) does when powered with no computer
+        :return StartupParams of (bootmode, start_pos, end_pos, repeats)
+        :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+
+        Needs firmware 206+ or an mk3; older devices answer with
+        whatever the unimplemented command leaves in the buffer.
+        """
+        self.write([REPORT_ID, ord('b'), 0, 0, 0, 0, 0, 0, 0])
+        buf = self.read()
+        return StartupParams(buf[2], buf[3], buf[4], buf[5])
+
+    def set_startup_params(self, bootmode: int = BOOT_NORMAL,
+                           start_pos: int = 0, end_pos: int = 0,
+                           count: int = 0) -> None:
+        """ Set what the blink(1) does when powered with no computer
+        :param bootmode: BOOT_NORMAL, BOOT_PLAY or BOOT_OFF
+        :param start_pos: sub-pattern start line, for BOOT_PLAY
+        :param end_pos: sub-pattern end line, for BOOT_PLAY
+        :param count: times to play, 0=forever
+        :raises: ValueError: if bootmode or a position is out of range
+        :raises: Blink1ConnectionFailed: if blink(1) is disconnected
+
+        This is non-volatile: it outlives unplugging the device. Needs
+        firmware 206+ or an mk3, and fails silently on older devices.
+        """
+        if bootmode not in (BOOT_NORMAL, BOOT_PLAY, BOOT_OFF):
+            raise ValueError(
+                "bootmode must be BOOT_NORMAL, BOOT_PLAY or BOOT_OFF, got %r"
+                % (bootmode,)
+            )
+        for name, pos in (('start_pos', start_pos), ('end_pos', end_pos)):
+            if not 0 <= int(pos) <= self.pattern_lines:
+                raise ValueError(
+                    "%s must be 0-%d, got %r" % (name, self.pattern_lines, pos)
+                )
+
+        self.write([
+            REPORT_ID, ord('B'), int(bootmode),
+            int(start_pos), int(end_pos), _clamp_byte(count), 0, 0, 0,
+        ])
 
     def clear_pattern(self) -> None:
         """ Clear entire color pattern in blink(1)
