@@ -1,6 +1,21 @@
 # Changelog
 
-## 1.0.0 (unreleased)
+## 1.0.1 - 21 Sep 2026
+
+### Fixed
+
+- Reading from the device failed on Windows with `OSError: read error`.
+  A feature report read has to request the full 9-byte report size;
+  Windows rejects a shorter buffer, while macOS and Linux return 8 bytes
+  whatever is asked for. 1.0.0 requested 8, the number of bytes that come
+  back, which is a different thing from the number that must be asked for.
+
+  On Windows under 1.0.0 this meant `get_version()`, `read_pattern_line()`
+  and `read_pattern()` all raised, and because pattern-size detection
+  swallows errors and falls back to the mk3 size, `Blink1()` still opened
+  but always reported `pattern_lines` as 32, which is wrong on an mk2.
+
+## 1.0.0 - 21 Sep 2026
 
 ### Changed
 

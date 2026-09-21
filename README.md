@@ -38,7 +38,8 @@ Features of this library:
 
 This library lives at https://github.com/todbot/blink1-python
 
-Changes are recorded in [CHANGELOG.md](./CHANGELOG.md). If you are
+Changes are recorded in
+[CHANGELOG.md](https://github.com/todbot/blink1-python/blob/main/CHANGELOG.md). If you are
 upgrading from 0.4.0, read its "Changed" section first: 1.0.0 has five
 behavior changes, including colors outside 0-255 now raising
 `InvalidColor`, and a corrected value for the `fluorescent` white point.
@@ -85,7 +86,7 @@ Both report a missing blink(1) or an unrecognized color as a one-line
 error rather than a traceback. Run either with `--help` for the full
 list of options.
 
-For examples, see the [`blink1_demo`](./blink1_demo/) directory for several examples on how to use this library.
+For examples, see the [`blink1_demo`](https://github.com/todbot/blink1-python/tree/main/blink1_demo) directory for several examples on how to use this library.
 
 ## OS-specific notes
 The `blink1-python` library relies on [cython-hidapi](https://github.com/trezor/cython-hidapi) for USB HID access.  This package may require a C compiler and attendant utilities to be installed before installing this library.
