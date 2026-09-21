@@ -40,6 +40,9 @@ work, `onDevice` and `Blink1.notfound()` included.
   old bare `KeyError` still works.
 - `blink1-shine --switch-off`, and `--serial` on both CLI scripts. Both
   now report a missing device or bad color as a one-line error.
+- `blink1-shine --list` prints the serial numbers of connected blink(1)s,
+  and `--version` prints the library version plus the device firmware
+  version when one is attached. Neither needs a device to run.
 - Type hints on the public API, with `py.typed`.
 - A test suite that runs with no hardware attached, via a fake HID layer.
   Tests needing a real device are marked and skipped unless

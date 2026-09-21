@@ -2,7 +2,12 @@ import unittest
 
 import pytest
 
-from blink1.blink1 import Blink1, Blink1ConnectionFailed, InvalidColor
+from blink1.blink1 import (
+    READ_SIZE,
+    Blink1,
+    Blink1ConnectionFailed,
+    InvalidColor,
+)
 
 from .fakehid import DEFAULT_SERIAL, FakeHidMixin
 
@@ -37,7 +42,18 @@ class LightControlChecks:
         self.b1.off()
 
     def test_get_firmware_version(self):
-        self.assertTrue(self.b1.get_version())
+        version = self.b1.get_version()
+        self.assertTrue(version.isdigit(), version)
+        self.assertGreater(int(version), 0)
+
+    def test_read_report_is_shorter_than_a_write(self):
+        """Reads come back with 8 bytes though writes take 9.
+
+        Runs against both the fake and real hardware, so the fake cannot
+        drift back to mirroring the write size.
+        """
+        self.b1.get_version()
+        self.assertEqual(len(self.b1.read()), READ_SIZE)
 
     def test_get_serial_number(self):
         self.assertTrue(self.b1.get_serial_number())

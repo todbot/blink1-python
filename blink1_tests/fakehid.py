@@ -10,6 +10,10 @@ bytes.
 
 REPORT_ID = 0x01
 REPORT_SIZE = 9
+# A real blink(1) answers reads with 8 bytes, one fewer than a write takes.
+# Verified against mk3 firmware 304; the fake must match or it validates
+# assumptions the hardware does not hold.
+READ_SIZE = 8
 
 DEFAULT_SERIAL = "1A2B3C4D"
 DEFAULT_FIRMWARE = "306"
@@ -25,7 +29,7 @@ class FakeHidDevice:
         self.writes = []
         self.pattern = [(0, 0, 0, 0, 0)] * PATTERN_LINES
         self.ledn = 0
-        self._response = [0] * REPORT_SIZE
+        self._response = [0] * READ_SIZE
 
     @property
     def closed(self):
@@ -72,7 +76,7 @@ class FakeHidDevice:
             self._response = [
                 REPORT_ID, cmd, 0,
                 ord(str(n // 100)), ord(str(n % 100)),
-                0, 0, 0, 0,
+                0, 0, 0,
             ]
         elif cmd == ord("l"):
             self.ledn = buf[2]
@@ -85,7 +89,7 @@ class FakeHidDevice:
             r, g, b, th, tl = (
                 self.pattern[pos] if 0 <= pos < len(self.pattern) else (0, 0, 0, 0, 0)
             )
-            self._response = [REPORT_ID, cmd, r, g, b, th, tl, pos, 0]
+            self._response = [REPORT_ID, cmd, r, g, b, th, tl, 0]
 
 
 class FakeHidModule:

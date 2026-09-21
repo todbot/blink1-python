@@ -64,10 +64,15 @@ when this library is installed.
   blink1-shine --color '#ff00ff' --fade 1.5
   blink1-shine --switch-off          # set the color, then turn it off on exit
   blink1-shine --serial 20002345     # pick one of several blink(1)s
+  blink1-shine --list                # serial numbers of connected blink(1)s
+  blink1-shine --version             # library version, and firmware if connected
 ```
 Note `--switch-off` is off by default, so the light stays lit after the
 command exits. This is the opposite of the `blink1()` context manager,
 which switches off unless told otherwise.
+
+`--list` and `--version` work with nothing plugged in. `--version` still
+reports the library version, and says no device is connected.
 
 `blink1-flash` flashes between two colors at a given rate:
 ```
