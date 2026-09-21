@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 """
-demo_pattern2 -- demo of blink1 library color pattern writing
+demo_clear_pattern -- demo of blink1 library color pattern clearing
 """
-import sys
+import time,sys
 from blink1.blink1 import Blink1
 
 try:
@@ -25,5 +25,17 @@ blink1.write_pattern_line( 500, 'black',  5)
 print("playing created subpattern 4 times")
 blink1.play( 3,5, 4)  # play that sub-loop 4 times
 
+time.sleep(5)
+
+print("clearing pattern, and playing again")
+blink1.off()
+blink1.clear_pattern()
+blink1.play(3,5,4)
+
+time.sleep(5)
+
 print("done (pattern will continue to play")
 blink1.close()
+
+
+
