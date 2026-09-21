@@ -27,6 +27,9 @@ class FakeHidDevice:
         self.opened = False
         self.close_count = 0
         self.writes = []
+        self.reads = []
+        # set to simulate a platform that hands back more than READ_SIZE
+        self.extra_read_bytes = 0
         self.pattern = [(0, 0, 0, 0, 0)] * PATTERN_LINES
         self.ledn = 0
         self._response = [0] * READ_SIZE
@@ -58,7 +61,11 @@ class FakeHidDevice:
     def get_feature_report(self, report_id, size):
         if self.closed:
             raise OSError("device is closed")
-        return list(self._response)
+        self.reads.append((report_id, size))
+        # Windows rejects a request smaller than the declared report length
+        if size < REPORT_SIZE:
+            raise OSError("read error")
+        return list(self._response) + [0] * self.extra_read_bytes
 
     def get_serial_number_string(self):
         if self.closed:

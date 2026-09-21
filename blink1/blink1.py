@@ -53,7 +53,9 @@ PRODUCT_ID = 0x01ED
 
 REPORT_SIZE = 9  # 8 bytes + 1 byte reportId
 
-# The device answers a feature report read with one byte fewer than a write
+# Reads must still ask for REPORT_SIZE: Windows rejects a short buffer with
+# "read error". How much comes back varies by platform, so only this minimum
+# is enforced.
 READ_SIZE = 8
 
 MAX_LEDN = 2
@@ -265,7 +267,7 @@ class Blink1(object):
         :raises: Blink1ConnectionFailed if blink(1) is disconnected or closed
         """
         self._require_dev()
-        buf = self.dev.get_feature_report(REPORT_ID, READ_SIZE)
+        buf = self.dev.get_feature_report(REPORT_ID, REPORT_SIZE)
         log.debug("blink1read: " + ",".join('0x%02x' % v for v in buf))
         # Short means a truncated or failed read; longer is tolerated, since
         # how much hidapi hands back varies by platform.

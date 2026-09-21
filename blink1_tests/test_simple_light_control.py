@@ -4,6 +4,8 @@ import pytest
 
 from blink1.blink1 import (
     READ_SIZE,
+    REPORT_ID,
+    REPORT_SIZE,
     Blink1,
     Blink1ConnectionFailed,
     InvalidColor,
@@ -68,6 +70,22 @@ class TestSimpleLightControlFake(FakeHidMixin, LightControlChecks, unittest.Test
     def test_serial_matches_enumeration(self):
         self.assertEqual(self.b1.get_serial_number(), DEFAULT_SERIAL)
         self.assertEqual(Blink1.list(), [DEFAULT_SERIAL])
+
+    def test_read_requests_the_full_report_size(self):
+        """Windows fails a read that asks for less than the report length.
+
+        The size asked for and the size that comes back are different
+        numbers; requesting READ_SIZE here broke Windows once already.
+        """
+        self.b1.get_version()
+        self.assertEqual(self.fake_hid.last_device.reads[-1],
+                         (REPORT_ID, REPORT_SIZE))
+
+    def test_read_tolerates_a_longer_response(self):
+        """Some platforms hand back more than READ_SIZE; that is not an error."""
+        self.fake_hid.last_device.extra_read_bytes = 1
+        self.assertEqual(len(self.b1.read()), READ_SIZE + 1)
+        self.assertTrue(self.b1.get_version().isdigit())
 
     def test_version_from_firmware(self):
         self.assertEqual(self.b1.get_version(), '306')
